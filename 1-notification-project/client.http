@@ -1,0 +1,13 @@
+
+POST http://localhost:3000/notifications
+Content-Type: application/json
+
+{
+    "channel": "email",
+    "payload": {
+        "channel": "email",
+        "to": "asdanielsantos@gmail.com",
+        "subject": "Notification",
+        "body": "Hello, this is a test notification"
+    }
+}

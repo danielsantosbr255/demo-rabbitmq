@@ -1,0 +1,15 @@
+{
+  "name": "notification-system",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:gateway": "pnpm --filter api-gateway dev",
+    "dev:email": "pnpm --filter email-worker dev",
+    "dev:sms": "pnpm --filter sms-worker dev",
+    "dev:push": "pnpm --filter push-worker dev",
+    "dev:dlq": "pnpm --filter dlq-inspector dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "clean": "pnpm -r exec rm -rf dist"
+  }
+}
