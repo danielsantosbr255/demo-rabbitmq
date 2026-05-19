@@ -1,5 +1,4 @@
 services:
-
   rabbitmq:
     image: rabbitmq:4.3-management-alpine
     container_name: rabbitmq
@@ -37,6 +36,9 @@ services:
     build:
       context: ./apps/api-gateway
       dockerfile: Dockerfile
+      target: prod
+    image: api-gateway:prod
+    pull_policy: build
     container_name: api-gateway
     ports:
       - '3000:3000'
@@ -47,7 +49,7 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://127.0.0.1:3000/health']
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3000/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -59,6 +61,8 @@ services:
     build:
       context: ./apps/email-worker
       dockerfile: Dockerfile
+    image: email-worker
+    pull_policy: build
     container_name: email-worker
     env_file: apps/email-worker/.env
     environment:
@@ -76,23 +80,10 @@ services:
     build:
       context: ./apps/sms-worker
       dockerfile: Dockerfile
+    image: sms-worker
+    pull_policy: build
     container_name: sms-worker
     env_file: apps/sms-worker/.env
-    environment:
-      RABBITMQ_URL: amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASS:-admin}@rabbitmq:5672
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - notification-net
-    restart: unless-stopped
-
-  push-worker:
-    build:
-      context: ./apps/push-worker
-      dockerfile: Dockerfile
-    container_name: push-worker
-    env_file: apps/push-worker/.env
     environment:
       RABBITMQ_URL: amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASS:-admin}@rabbitmq:5672
     depends_on:
@@ -106,6 +97,8 @@ services:
     build:
       context: ./apps/dlq-inspector
       dockerfile: Dockerfile
+    image: dlq-inspector
+    pull_policy: build
     container_name: dlq-inspector
     env_file: apps/dlq-inspector/.env
     environment:
@@ -121,6 +114,8 @@ services:
     build:
       context: ./apps/dashboard
       dockerfile: Dockerfile
+    image: dashboard
+    pull_policy: build
     container_name: dashboard
     ports:
       - '5173:5173'

@@ -1,0 +1,25 @@
+# =============================================================================
+# compose.override.yaml — Development overrides (auto-loaded by docker compose)
+# =============================================================================
+# This file is automatically merged with compose.yaml when you run:
+#   docker compose up
+#   docker compose watch
+#
+# To run in production mode (skipping this file):
+#   docker compose -f compose.yaml up
+# =============================================================================
+
+services:
+  api-gateway:
+    build:
+      target: dev
+    image: api-gateway:dev
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
+    develop:
+      watch:
+        - path: ./apps/api-gateway/src
+          action: sync
+          target: /app/src
+        - path: ./apps/api-gateway/package.json
+          action: rebuild
