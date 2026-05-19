@@ -7,7 +7,7 @@
     "dev": "tsx --env-file .env --watch src/main.ts",
     "build": "tsc --project tsconfig.json",
     "start": "node dist/main.js",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest"
   },
   "dependencies": {

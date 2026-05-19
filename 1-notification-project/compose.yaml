@@ -35,8 +35,8 @@ services:
 
   api-gateway:
     build:
-      context: .
-      dockerfile: apps/api-gateway/Dockerfile
+      context: ./apps/api-gateway
+      dockerfile: Dockerfile
     container_name: api-gateway
     ports:
       - '3000:3000'
@@ -47,7 +47,7 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:3000/health']
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://127.0.0.1:3000/health']
       interval: 15s
       timeout: 5s
       retries: 5
@@ -57,8 +57,8 @@ services:
 
   email-worker:
     build:
-      context: .
-      dockerfile: apps/email-worker/Dockerfile
+      context: ./apps/email-worker
+      dockerfile: Dockerfile
     container_name: email-worker
     env_file: apps/email-worker/.env
     environment:
@@ -74,8 +74,8 @@ services:
 
   sms-worker:
     build:
-      context: .
-      dockerfile: apps/sms-worker/Dockerfile
+      context: ./apps/sms-worker
+      dockerfile: Dockerfile
     container_name: sms-worker
     env_file: apps/sms-worker/.env
     environment:
@@ -89,8 +89,8 @@ services:
 
   push-worker:
     build:
-      context: .
-      dockerfile: apps/push-worker/Dockerfile
+      context: ./apps/push-worker
+      dockerfile: Dockerfile
     container_name: push-worker
     env_file: apps/push-worker/.env
     environment:
@@ -104,8 +104,8 @@ services:
 
   dlq-inspector:
     build:
-      context: .
-      dockerfile: apps/dlq-inspector/Dockerfile
+      context: ./apps/dlq-inspector
+      dockerfile: Dockerfile
     container_name: dlq-inspector
     env_file: apps/dlq-inspector/.env
     environment:
@@ -113,6 +113,25 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+    networks:
+      - notification-net
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: ./apps/dashboard
+      dockerfile: Dockerfile
+    container_name: dashboard
+    ports:
+      - '5173:5173'
+    environment:
+      GATEWAY_API_URL: http://api-gateway:3000
+      RABBITMQ_API_URL: http://rabbitmq:15672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      api-gateway:
+        condition: service_started
     networks:
       - notification-net
     restart: unless-stopped
