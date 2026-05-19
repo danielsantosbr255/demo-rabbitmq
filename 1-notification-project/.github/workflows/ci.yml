@@ -1,0 +1,54 @@
+# =============================================================================
+# CI — Continuous Integration
+# Runs on every push and pull request to main.
+# Validates code quality before any merge.
+# =============================================================================
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Typecheck + Test all services in parallel
+  # ---------------------------------------------------------------------------
+  validate:
+    name: Validate (${{ matrix.app }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false       # all jobs run even if one fails
+      matrix:
+        app:
+          - api-gateway
+          - email-worker
+          - sms-worker
+          - dlq-inspector
+
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm --filter ${{ matrix.app }} exec tsc --noEmit
+
+      - name: Test
+        run: pnpm --filter ${{ matrix.app }} test
