@@ -8,6 +8,7 @@ async function main(): Promise<void> {
     {
       queue: 'q.notifications.dlq',
       qos: { prefetchCount: 1 },
+      queueOptions: { passive: true },
     },
     async (msg) => {
       const raw = msg.body as Record<string, unknown>;
