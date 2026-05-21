@@ -7,7 +7,7 @@ import { notificationRoutes } from './notification/notification.controller.js';
 import type { INotificationPublisher } from './notification/notification.types.js';
 
 export async function buildServer(publisher: INotificationPublisher) {
-  const app = fastify({ logger: false });
+  const app = fastify({ loggerInstance: logger });
 
   await app.register(cors, { origin: true });
 

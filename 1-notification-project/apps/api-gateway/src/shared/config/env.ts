@@ -1,11 +1,17 @@
 import { z } from 'zod/v4';
 
+try {
+  process.loadEnvFile();
+} catch (error) {
+  // Ignora se o arquivo não for encontrado (ex: no Docker de produção)
+}
+
 const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error']).default('info'),
   PORT: z.coerce.number().int().positive().default(3000),
   HOST: z.string().default('0.0.0.0'),
-  RABBITMQ_URL: z.string().url(),
+  RABBITMQ_URL: z.url(),
 });
 
 const parsed = EnvSchema.safeParse(process.env);
