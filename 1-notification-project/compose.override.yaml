@@ -15,11 +15,28 @@ services:
       target: dev
     image: api-gateway:dev
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
+      test: [ "CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))" ]
     develop:
       watch:
         - path: ./apps/api-gateway/src
           action: sync
           target: /app/src
         - path: ./apps/api-gateway/package.json
+          action: rebuild
+
+  monitor-api:
+    build:
+      target: dev
+    image: monitor-api:dev
+    healthcheck:
+      test: [ "CMD", "node", "-e", "fetch('http://127.0.0.1:3001/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    develop:
+      watch:
+        - path: ./apps/monitor-api/src
+          action: sync
+          target: /app/src
+        - path: ./apps/monitor-api/package.json
           action: rebuild

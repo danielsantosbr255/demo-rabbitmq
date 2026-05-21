@@ -14,8 +14,9 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
       - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
     healthcheck:
-      test: ['CMD', 'rabbitmq-diagnostics', 'ping']
+      test: [ 'CMD', 'rabbitmq-diagnostics', 'ping' ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -49,7 +50,7 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3000/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
+      test: [ "CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3000/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))" ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -93,16 +94,22 @@ services:
       - notification-net
     restart: unless-stopped
 
-  dlq-inspector:
+  monitor-api:
     build:
-      context: ./apps/dlq-inspector
+      context: ./apps/monitor-api
       dockerfile: Dockerfile
-    image: dlq-inspector
+      target: prod
+    image: monitor-api:prod
     pull_policy: build
-    container_name: dlq-inspector
-    env_file: apps/dlq-inspector/.env
+    container_name: monitor-api
+    ports:
+      - '3001:3001'
+    env_file: apps/monitor-api/.env
     environment:
+      PORT: 3001
+      HOST: 0.0.0.0
       RABBITMQ_URL: amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASS:-admin}@rabbitmq:5672
+      RABBITMQ_API_URL: http://${RABBITMQ_USER:-admin}:${RABBITMQ_PASS:-admin}@rabbitmq:15672
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -114,18 +121,20 @@ services:
     build:
       context: ./apps/dashboard
       dockerfile: Dockerfile
+      args:
+        VITE_API_GATEWAY_URL: "http://localhost:3000"
+        VITE_INSPECTOR_URL: "http://localhost:3001"
     image: dashboard
     pull_policy: build
     container_name: dashboard
     ports:
-      - '5173:5173'
-    environment:
-      GATEWAY_API_URL: http://api-gateway:3000
-      RABBITMQ_API_URL: http://rabbitmq:15672
+      - '5173:8080'
     depends_on:
       rabbitmq:
         condition: service_healthy
       api-gateway:
+        condition: service_started
+      monitor-api:
         condition: service_started
     networks:
       - notification-net
