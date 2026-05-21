@@ -1,29 +1,14 @@
-import { Connection } from 'rabbitmq-client';
-import { logger } from '../logger/logger.js';
 import { env } from '../config/env.js';
 
-let connection: Connection | null = null;
+const rabbitUrl = new URL(env.RABBITMQ_API_URL);
+const RABBIT_BASE = `${rabbitUrl.protocol}//${rabbitUrl.host}/api`;
+const RABBIT_AUTH = rabbitUrl.username && rabbitUrl.password
+  ? 'Basic ' + Buffer.from(`${rabbitUrl.username}:${rabbitUrl.password}`).toString('base64')
+  : undefined;
 
-export function getConnection(): Connection {
-  if (connection) return connection;
-
-  connection = new Connection(env.RABBITMQ_URL);
-
-  connection.on('error', (err) => {
-    logger.error({ err }, 'RabbitMQ connection error');
-  });
-
-  connection.on('connection', () => {
-    logger.info('RabbitMQ connected');
-  });
-
-  return connection;
-}
-
-export async function closeConnection(): Promise<void> {
-  if (connection) {
-    await connection.close();
-    connection = null;
-    logger.info('RabbitMQ connection closed');
-  }
+export function rabbitFetch(path: string, init?: RequestInit) {
+  const headers: Record<string, string> = {};
+  if (RABBIT_AUTH) headers['Authorization'] = RABBIT_AUTH;
+  if (init?.body) headers['Content-Type'] = 'application/json';
+  return fetch(`${RABBIT_BASE}${path}`, { ...init, headers: { ...headers, ...init?.headers } });
 }
