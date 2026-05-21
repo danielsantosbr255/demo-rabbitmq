@@ -1,12 +1,15 @@
 import fastify, { type FastifyError } from 'fastify';
+import cors from '@fastify/cors';
 import { serializerCompiler, validatorCompiler } from '@fastify/type-provider-zod';
 import { env } from './shared/config/env.js';
 import { logger } from './shared/logger/logger.js';
 import { notificationRoutes } from './notification/notification.controller.js';
 import type { INotificationPublisher } from './notification/notification.types.js';
 
-export function buildServer(publisher: INotificationPublisher) {
+export async function buildServer(publisher: INotificationPublisher) {
   const app = fastify({ logger: false });
+
+  await app.register(cors, { origin: true });
 
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);

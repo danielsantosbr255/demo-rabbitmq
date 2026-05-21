@@ -7,7 +7,7 @@ async function main(): Promise<void> {
   const connection = getConnection();
   const publisher = new RabbitMQNotificationPublisher(connection);
 
-  const app = buildServer(publisher);
+  const app = await buildServer(publisher);
 
   const shutdown = async (signal: string) => {
     logger.info({ signal }, 'Shutdown signal received');

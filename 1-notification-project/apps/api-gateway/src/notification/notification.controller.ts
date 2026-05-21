@@ -20,6 +20,10 @@ export async function notificationRoutes(app: FastifyInstance, publisher: INotif
   });
 
   app.get('/health', async (_request, reply) => {
-    return reply.send({ status: 'ok', service: 'api-gateway' });
+    return reply.send({
+      status: 'ok',
+      service: 'api-gateway',
+      timestamp: new Date().toISOString()
+    });
   });
 }
