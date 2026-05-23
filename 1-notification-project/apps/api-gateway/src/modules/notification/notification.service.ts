@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import type { INotificationPublisher, CreateNotificationDto, EnqueueResult } from './notification.types.js';
-import { logger } from '../shared/logger/logger.js';
+import { logger } from '../../shared/logger/logger.js';
 
 export class NotificationService {
-  constructor(private readonly publisher: INotificationPublisher) {}
+  constructor(private readonly publisher: INotificationPublisher) { }
 
   async enqueue(dto: CreateNotificationDto): Promise<EnqueueResult> {
     const messageId = randomUUID();

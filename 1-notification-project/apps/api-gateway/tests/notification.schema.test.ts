@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CreateNotificationSchema, EnqueueResultSchema } from '../src/notification/notification.schema.js';
+import { CreateNotificationSchema, EnqueueResultSchema } from '../src/modules/notification/notification.schema.js';
 
 describe('CreateNotificationSchema', () => {
   it('should validate a valid email payload', () => {
@@ -40,14 +40,6 @@ describe('CreateNotificationSchema', () => {
       payload: { channel: 'sms', to: '+5511999990000', body: 'x'.repeat(161) },
     });
     expect(result.success).toBe(false);
-  });
-
-  it('should validate a valid push payload', () => {
-    const result = CreateNotificationSchema.safeParse({
-      channel: 'push',
-      payload: { channel: 'push', deviceToken: 'abc123', title: 'Hey', body: 'There' },
-    });
-    expect(result.success).toBe(true);
   });
 
   it('should reject unknown channel', () => {

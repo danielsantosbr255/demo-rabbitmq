@@ -1,7 +1,8 @@
-import { buildServer, env } from './server.js';
+import { buildServer } from './server.js';
 import { getConnection, closeConnection } from './shared/messaging/rabbitmq.client.js';
-import { RabbitMQNotificationPublisher } from './notification/notification.publisher.js';
+import { RabbitMQNotificationPublisher } from './modules/notification/adapters/notification.publisher.js';
 import { logger } from './shared/logger/logger.js';
+import { env } from './shared/config/env.js';
 
 async function main(): Promise<void> {
   const connection = getConnection();

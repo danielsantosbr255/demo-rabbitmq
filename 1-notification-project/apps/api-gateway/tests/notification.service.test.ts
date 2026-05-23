@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NotificationService } from '../src/notification/notification.service.js';
-import type { INotificationPublisher, NotificationMessage } from '../src/notification/notification.types.js';
+import { NotificationService } from '../src/modules/notification/notification.service.js';
+import type { INotificationPublisher, NotificationMessage } from '../src/modules/notification/notification.types.js';
 
 const mockPublisher: INotificationPublisher = {
   publish: vi.fn(),
@@ -50,8 +50,14 @@ describe('NotificationService', () => {
     const service = new NotificationService(mockPublisher);
 
     const [r1, r2] = await Promise.all([
-      service.enqueue({ channel: 'push', payload: { channel: 'push', deviceToken: 'tok1', title: 'T', body: 'B' } }),
-      service.enqueue({ channel: 'push', payload: { channel: 'push', deviceToken: 'tok2', title: 'T', body: 'B' } }),
+      service.enqueue({
+        channel: 'sms',
+        payload: { channel: 'sms', to: '+5511999990001', body: 'Test1' },
+      }),
+      service.enqueue({
+        channel: 'sms',
+        payload: { channel: 'sms', to: '+5511999990002', body: 'Test2' },
+      }),
     ]);
 
     expect(r1.messageId).not.toBe(r2.messageId);

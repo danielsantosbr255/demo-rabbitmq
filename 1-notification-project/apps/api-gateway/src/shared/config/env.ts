@@ -1,10 +1,5 @@
 import { z } from 'zod/v4';
-
-try {
-  process.loadEnvFile();
-} catch (error) {
-  // Ignora se o arquivo não for encontrado (ex: no Docker de produção)
-}
+try { process.loadEnvFile(); } catch { }
 
 const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),

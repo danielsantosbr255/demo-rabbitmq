@@ -1,10 +1,12 @@
-import fastify, { type FastifyError } from 'fastify';
+import fastify from 'fastify';
 import cors from '@fastify/cors';
-import { serializerCompiler, validatorCompiler } from '@fastify/type-provider-zod';
-import { env } from './shared/config/env.js';
+import fastifySwagger from '@fastify/swagger';
 import { logger } from './shared/logger/logger.js';
-import { notificationRoutes } from './notification/notification.controller.js';
-import type { INotificationPublisher } from './notification/notification.types.js';
+import fastifyApiReference from '@scalar/fastify-api-reference';
+import { notificationModule } from './modules/notification/notification.module.js';
+import type { INotificationPublisher } from './modules/notification/notification.types.js';
+import { errorHandlerMiddleware } from './shared/middlewares/error-handler.middleware.js';
+import { jsonSchemaTransform, serializerCompiler, validatorCompiler } from '@fastify/type-provider-zod';
 
 export async function buildServer(publisher: INotificationPublisher) {
   const app = fastify({ loggerInstance: logger });
@@ -14,27 +16,29 @@ export async function buildServer(publisher: INotificationPublisher) {
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
 
-  app.setErrorHandler((error: FastifyError, _request, reply) => {
-    if (error.validation) {
-      return reply.status(400).send({
-        statusCode: 400,
-        error: 'Validation Error',
-        details: error.validation,
-      });
-    }
-
-    logger.error({ err: error }, 'Unhandled error');
-
-    return reply.status(500).send({
-      statusCode: 500,
-      error: 'Internal Server Error',
-      message: error.message,
-    });
+  await app.register(fastifySwagger, {
+    openapi: {
+      info: {
+        title: 'API Gateway',
+        description: 'Notification Gateway API Documentation',
+        version: '1.0.0',
+      },
+    },
+    transform: jsonSchemaTransform,
   });
 
-  app.register(notificationRoutes, publisher);
+  await app.register(fastifyApiReference, {
+    routePrefix: '/docs',
+    configuration: {
+      theme: 'purple',
+      layout: 'modern',
+      darkMode: false,
+    },
+  });
+
+  await app.register(notificationModule, publisher);
+
+  app.setErrorHandler(errorHandlerMiddleware);
 
   return app;
 }
-
-export { env };
