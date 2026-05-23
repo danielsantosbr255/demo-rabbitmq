@@ -1,5 +1,5 @@
 ---
-name: Git Commit Analyzer
+name: git-commits
 description: How to correctly analyze and group changes into conventional commits with rich scopes.
 ---
 
