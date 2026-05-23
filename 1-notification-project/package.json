@@ -11,6 +11,6 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "clean": "pnpm -r exec rm -rf dist",
-    "infra": "docker-compose up rabbitmq mailpit -d"
+    "infra": "docker compose up rabbitmq mailpit -d"
   }
 }
