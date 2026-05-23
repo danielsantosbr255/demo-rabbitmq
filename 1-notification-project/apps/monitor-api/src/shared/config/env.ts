@@ -1,10 +1,5 @@
 import { z } from 'zod';
-
-try {
-  process.loadEnvFile();
-} catch (error) {
-  // ignore error if file not found
-}
+try { process.loadEnvFile() } catch { }
 
 const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),

@@ -1,5 +1,6 @@
-import { buildServer, env } from './server.js';
+import { buildServer } from './server.js';
 import { logger } from './shared/logger/logger.js';
+import { env } from './shared/config/env.js';
 
 async function main(): Promise<void> {
   const app = await buildServer();
