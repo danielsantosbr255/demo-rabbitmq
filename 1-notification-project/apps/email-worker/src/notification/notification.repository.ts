@@ -11,8 +11,8 @@ export class NodemailerEmailRepository implements IEmailRepository {
       port: env.SMTP_PORT,
       secure: false,
       ignoreTLS: true,
-      connectionTimeout: 5000, // Falha rápido se não conseguir conectar (5s)
-      socketTimeout: 5000,     // Timeout de leitura/escrita (5s)
+      connectionTimeout: 5000,
+      socketTimeout: 5000,
     });
   }
 

@@ -29,21 +29,16 @@ export function startConsumer(connection: Connection, options: ConsumerOptions):
       try {
         await handler(msg);
         childLogger.info('Message processed successfully');
-        // Returning void = ACK
       } catch (err) {
         childLogger.error({ err }, 'Message processing failed');
 
         const isFatal = err instanceof AppError && err.isFatal;
 
         if (isFatal || retryCount >= maxRetries) {
-          childLogger.error(
-            { totalAttempts: retryCount + 1, isFatal },
-            'Message sent to DLQ (no more retries)',
-          );
+          childLogger.error({ totalAttempts: retryCount + 1, isFatal }, 'Message sent to DLQ (no more retries)');
           return ConsumerStatus.DROP;
         }
 
-        // Publish to retry queue with incremented retry count
         const retryQueue = `${queue}.retry.${retryCount}`;
         const pub = connection.createPublisher({ confirm: true });
 
@@ -51,10 +46,7 @@ export function startConsumer(connection: Connection, options: ConsumerOptions):
           await pub.send(
             {
               routingKey: retryQueue,
-              headers: {
-                ...msg.headers,
-                'x-retry-count': retryCount + 1,
-              },
+              headers: { ...msg.headers, 'x-retry-count': retryCount + 1 },
               ...(msg.messageId && { messageId: msg.messageId }),
               ...(msg.correlationId && { correlationId: msg.correlationId }),
               contentType: 'application/json',
@@ -63,16 +55,10 @@ export function startConsumer(connection: Connection, options: ConsumerOptions):
             msg.body,
           );
 
-          childLogger.warn(
-            { retryQueue, nextRetry: retryCount },
-            'Message scheduled for retry',
-          );
+          childLogger.warn({ retryQueue, nextRetry: retryCount }, 'Message scheduled for retry');
         } finally {
           await pub.close();
         }
-
-        // ACK original so it doesn't go to DLX directly
-        // (we already moved it to the retry queue)
       }
     },
   );
