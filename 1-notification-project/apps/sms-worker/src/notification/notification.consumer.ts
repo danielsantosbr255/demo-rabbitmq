@@ -1,30 +1,15 @@
 import type { AsyncMessage } from 'rabbitmq-client';
-import { z } from 'zod/v4';
 import { SmsNotificationService } from './notification.service.js';
 import { FatalNotificationError } from '../shared/errors/app.error.js';
 import { logger } from '../shared/logger/logger.js';
-
-const NotificationMessageSchema = z.object({
-  messageId: z.string(),
-  correlationId: z.string(),
-  channel: z.literal('sms'),
-  payload: z.object({
-    to: z.string(),
-    body: z.string().min(1),
-  }),
-  createdAt: z.string(),
-  metadata: z.object({
-    sourceService: z.string(),
-    retryCount: z.number(),
-  }),
-});
+import { notificationMessageSchema } from './notification.schema.js';
 
 export class SmsNotificationConsumer {
-  constructor(private readonly service: SmsNotificationService) {}
+  constructor(private readonly service: SmsNotificationService) { }
 
   async handle(msg: AsyncMessage): Promise<void> {
     const raw = msg.body;
-    const parsed = NotificationMessageSchema.safeParse(raw);
+    const parsed = notificationMessageSchema.safeParse(raw);
 
     if (!parsed.success) {
       logger.error(
