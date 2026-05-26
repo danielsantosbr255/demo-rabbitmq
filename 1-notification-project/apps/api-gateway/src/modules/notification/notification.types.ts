@@ -1,6 +1,6 @@
 import type { CreateNotificationDto, EnqueueResult } from './notification.schema.js';
 
-export type NotificationChannel = 'email' | 'sms' | 'push';
+export type NotificationChannel = 'email' | 'sms';
 
 export type EmailPayload = {
   to: string;
@@ -13,17 +13,11 @@ export type SmsPayload = {
   body: string;
 }
 
-export type PushPayload = {
-  deviceToken: string;
-  title: string;
-  body: string;
-}
-
 export type NotificationMessage = {
   messageId: string;
   correlationId: string;
   channel: NotificationChannel;
-  payload: EmailPayload | SmsPayload | PushPayload;
+  payload: EmailPayload | SmsPayload;
   createdAt: string;
   metadata: {
     sourceService: string;

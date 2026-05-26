@@ -8,7 +8,7 @@ import type { INotificationPublisher } from './modules/notification/notification
 import { errorHandlerMiddleware } from './shared/middlewares/error-handler.middleware.js';
 import { jsonSchemaTransform, serializerCompiler, validatorCompiler } from '@fastify/type-provider-zod';
 
-export async function buildServer(publisher: INotificationPublisher) {
+export async function buildServer() {
   const app = fastify({ loggerInstance: logger });
 
   await app.register(cors, { origin: true });
@@ -36,7 +36,7 @@ export async function buildServer(publisher: INotificationPublisher) {
     },
   });
 
-  await app.register(notificationModule, publisher);
+  await app.register(notificationModule);
 
   app.setErrorHandler(errorHandlerMiddleware);
 

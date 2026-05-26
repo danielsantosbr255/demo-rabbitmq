@@ -1,19 +1,14 @@
 import { buildServer } from './server.js';
-import { getConnection, closeConnection } from './shared/messaging/rabbitmq.client.js';
-import { RabbitMQNotificationPublisher } from './modules/notification/adapters/notification.publisher.js';
+import { closeConnection } from './shared/messaging/rabbitmq.client.js';
 import { logger } from './shared/logger/logger.js';
 import { env } from './shared/config/env.js';
 
 async function main(): Promise<void> {
-  const connection = getConnection();
-  const publisher = new RabbitMQNotificationPublisher(connection);
-
-  const app = await buildServer(publisher);
+  const app = await buildServer();
 
   const shutdown = async (signal: string) => {
     logger.info({ signal }, 'Shutdown signal received');
     await app.close();
-    await publisher.close();
     await closeConnection();
     process.exit(0);
   };

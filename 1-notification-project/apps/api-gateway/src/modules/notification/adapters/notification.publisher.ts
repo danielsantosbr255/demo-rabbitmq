@@ -1,14 +1,22 @@
 import type { Connection, Publisher } from 'rabbitmq-client';
 import type { INotificationPublisher, NotificationMessage } from '../notification.types.js';
 import { logger } from '../../../shared/logger/logger.js';
+import { getConnection } from '../../../shared/messaging/rabbitmq.client.js';
 
 const EXCHANGE = 'notifications.exchange';
 
 export class RabbitMQNotificationPublisher implements INotificationPublisher {
-  private readonly publisher: Publisher;
+  private publisher: Publisher;
+  private connection: Connection;
 
-  constructor(connection: Connection) {
-    this.publisher = connection.createPublisher({ confirm: true, maxAttempts: 3 });
+  constructor() {
+    this.connection = getConnection();
+    this.publisher = this.connection.createPublisher({
+      confirm: true,
+      maxAttempts: 3,
+      exchanges: [{ exchange: EXCHANGE, type: 'direct', durable: true },],
+    });
+
     this.publisher.on('retry', (err, envelope) => {
       logger.warn({ err, envelope }, 'Publisher retrying');
     });
