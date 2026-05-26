@@ -1,22 +1,24 @@
-import { AlertOctagon, RotateCcw, Trash2 } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
-import type { DeadLetter } from '../types/dashboard';
+import { AnimatePresence, motion } from "framer-motion"
+import { AlertOctagon, RotateCcw, Trash2 } from "lucide-react"
+import type { DeadLetter } from "../types/dashboard"
 
 interface DlqInspectorProps {
-  dlqMessages: DeadLetter[];
-  isPurging: boolean;
-  onRefresh: () => void;
-  onClear: () => void;
+  dlqMessages: DeadLetter[]
+  isPurging: boolean
+  onRefresh: () => void
+  onClear: () => void
 }
 
 export function DlqInspector({ dlqMessages, isPurging, onRefresh, onClear }: DlqInspectorProps) {
   const handleClear = () => {
-    if (!window.confirm('Tem certeza que deseja limpar a DLQ? Isso removerá permanentemente todas as mensagens mortas.')) {
-      return;
+    if (
+      !window.confirm("Tem certeza que deseja limpar a DLQ? Isso removerá permanentemente todas as mensagens mortas.")
+    ) {
+      return
     }
 
-    onClear();
-  };
+    onClear()
+  }
 
   return (
     <section aria-labelledby="dlq-inspector-title" className="flex-1 overflow-y-auto bg-slate-50 p-5">
@@ -26,22 +28,26 @@ export function DlqInspector({ dlqMessages, isPurging, onRefresh, onClear }: Dlq
             <AlertOctagon className="w-4 h-4 text-rose-500" />
           </div>
           <div>
-            <h2 id="dlq-inspector-title" className="text-sm font-semibold text-slate-700">Inspetor de Fila Morta (DLQ)</h2>
+            <h2 id="dlq-inspector-title" className="text-sm font-semibold text-slate-700">
+              Inspetor de Fila Morta (DLQ)
+            </h2>
             <p className="text-[11px] text-slate-400">Mensagens que esgotaram todas as tentativas de reprocessamento</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {dlqMessages.length > 0 && (
             <button
+              type="button"
               onClick={handleClear}
               disabled={isPurging}
               className="flex items-center gap-1.5 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 disabled:opacity-50 px-3 py-1.5 rounded-lg transition-all"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              {isPurging ? 'Limpando...' : 'Limpar DLQ'}
+              {isPurging ? "Limpando..." : "Limpar DLQ"}
             </button>
           )}
           <button
+            type="button"
             onClick={onRefresh}
             className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg transition-all"
           >
@@ -52,9 +58,7 @@ export function DlqInspector({ dlqMessages, isPurging, onRefresh, onClear }: Dlq
 
       {dlqMessages.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 border border-dashed border-slate-200 rounded-2xl bg-white">
-          <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 grid place-items-center mb-3">
-            ✓
-          </div>
+          <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 grid place-items-center mb-3">✓</div>
           <p className="text-sm font-semibold text-slate-500">DLQ Limpa</p>
           <p className="text-xs text-slate-400 mt-1">Todos os pipelines saudáveis — sem mensagens mortas.</p>
         </div>
@@ -74,7 +78,7 @@ export function DlqInspector({ dlqMessages, isPurging, onRefresh, onClear }: Dlq
                     {msg.properties.message_id ?? `msg-${index}`}
                   </span>
                   <span className="bg-rose-50 border border-rose-200 text-rose-500 text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wide shrink-0">
-                    {String(msg.properties.headers?.['x-retry-count'] ?? 3)} tentativas
+                    {String(msg.properties.headers?.["x-retry-count"] ?? 3)} tentativas
                   </span>
                 </div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Payload Original</p>
@@ -87,5 +91,5 @@ export function DlqInspector({ dlqMessages, isPurging, onRefresh, onClear }: Dlq
         </div>
       )}
     </section>
-  );
+  )
 }
