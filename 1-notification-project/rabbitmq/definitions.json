@@ -1,11 +1,17 @@
 {
-  "vhosts": [{ "name": "/" }],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
   "users": [
     {
       "name": "admin",
       "password_hash": "yMnU+LDqfLIaAb0He0fJVOlT4bhl92WYe2zG3Das1cKg52LJ",
       "hashing_algorithm": "rabbit_password_hashing_sha256",
-      "tags": ["administrator"]
+      "tags": [
+        "administrator"
+      ]
     }
   ],
   "permissions": [
@@ -15,228 +21,6 @@
       "configure": ".*",
       "write": ".*",
       "read": ".*"
-    }
-  ],
-  "exchanges": [
-    {
-      "name": "notifications.exchange",
-      "vhost": "/",
-      "type": "direct",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {}
-    },
-    {
-      "name": "notifications.dlx",
-      "vhost": "/",
-      "type": "fanout",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {}
-    },
-    {
-      "name": "notifications.retry.dlx",
-      "vhost": "/",
-      "type": "direct",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {}
-    }
-  ],
-  "queues": [
-    {
-      "name": "q.email",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {
-        "x-dead-letter-exchange": "notifications.dlx",
-        "x-max-length": 50000
-      }
-    },
-    {
-      "name": "q.sms",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {
-        "x-dead-letter-exchange": "notifications.dlx",
-        "x-max-length": 50000
-      }
-    },
-    {
-      "name": "q.push",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {
-        "x-dead-letter-exchange": "notifications.dlx",
-        "x-max-length": 50000
-      }
-    },
-    {
-      "name": "q.email.retry.0",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {
-        "x-message-ttl": 10000,
-        "x-dead-letter-exchange": "notifications.retry.dlx",
-        "x-dead-letter-routing-key": "email"
-      }
-    },
-    {
-      "name": "q.email.retry.1",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {
-        "x-message-ttl": 30000,
-        "x-dead-letter-exchange": "notifications.retry.dlx",
-        "x-dead-letter-routing-key": "email"
-      }
-    },
-    {
-      "name": "q.email.retry.2",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {
-        "x-message-ttl": 120000,
-        "x-dead-letter-exchange": "notifications.retry.dlx",
-        "x-dead-letter-routing-key": "email"
-      }
-    },
-    {
-      "name": "q.sms.retry.0",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {
-        "x-message-ttl": 10000,
-        "x-dead-letter-exchange": "notifications.retry.dlx",
-        "x-dead-letter-routing-key": "sms"
-      }
-    },
-    {
-      "name": "q.sms.retry.1",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {
-        "x-message-ttl": 30000,
-        "x-dead-letter-exchange": "notifications.retry.dlx",
-        "x-dead-letter-routing-key": "sms"
-      }
-    },
-    {
-      "name": "q.sms.retry.2",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {
-        "x-message-ttl": 120000,
-        "x-dead-letter-exchange": "notifications.retry.dlx",
-        "x-dead-letter-routing-key": "sms"
-      }
-    },
-    {
-      "name": "q.push.retry.0",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {
-        "x-message-ttl": 10000,
-        "x-dead-letter-exchange": "notifications.retry.dlx",
-        "x-dead-letter-routing-key": "push"
-      }
-    },
-    {
-      "name": "q.push.retry.1",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {
-        "x-message-ttl": 30000,
-        "x-dead-letter-exchange": "notifications.retry.dlx",
-        "x-dead-letter-routing-key": "push"
-      }
-    },
-    {
-      "name": "q.push.retry.2",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {
-        "x-message-ttl": 120000,
-        "x-dead-letter-exchange": "notifications.retry.dlx",
-        "x-dead-letter-routing-key": "push"
-      }
-    },
-    {
-      "name": "q.notifications.dlq",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {}
-    }
-  ],
-  "bindings": [
-    {
-      "source": "notifications.exchange",
-      "vhost": "/",
-      "destination": "q.email",
-      "destination_type": "queue",
-      "routing_key": "email",
-      "arguments": {}
-    },
-    {
-      "source": "notifications.exchange",
-      "vhost": "/",
-      "destination": "q.sms",
-      "destination_type": "queue",
-      "routing_key": "sms",
-      "arguments": {}
-    },
-    {
-      "source": "notifications.exchange",
-      "vhost": "/",
-      "destination": "q.push",
-      "destination_type": "queue",
-      "routing_key": "push",
-      "arguments": {}
-    },
-    {
-      "source": "notifications.retry.dlx",
-      "vhost": "/",
-      "destination": "q.email",
-      "destination_type": "queue",
-      "routing_key": "email",
-      "arguments": {}
-    },
-    {
-      "source": "notifications.retry.dlx",
-      "vhost": "/",
-      "destination": "q.sms",
-      "destination_type": "queue",
-      "routing_key": "sms",
-      "arguments": {}
-    },
-    {
-      "source": "notifications.retry.dlx",
-      "vhost": "/",
-      "destination": "q.push",
-      "destination_type": "queue",
-      "routing_key": "push",
-      "arguments": {}
-    },
-    {
-      "source": "notifications.dlx",
-      "vhost": "/",
-      "destination": "q.notifications.dlq",
-      "destination_type": "queue",
-      "routing_key": "",
-      "arguments": {}
     }
   ]
 }

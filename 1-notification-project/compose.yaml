@@ -9,12 +9,9 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-admin}
-      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: >
-        -rabbitmq_management load_definitions "/etc/rabbitmq/definitions.json"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
-      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    restart: unless-stopped
     healthcheck:
       test: [ 'CMD', 'rabbitmq-diagnostics', 'ping' ]
       interval: 10s
@@ -106,8 +103,6 @@ services:
       - '3001:3001'
     env_file: apps/monitor-api/.env
     environment:
-      PORT: 3001
-      HOST: 0.0.0.0
       RABBITMQ_URL: amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASS:-admin}@rabbitmq:5672
       RABBITMQ_API_URL: http://${RABBITMQ_USER:-admin}:${RABBITMQ_PASS:-admin}@rabbitmq:15672
     depends_on:
@@ -133,9 +128,9 @@ services:
       rabbitmq:
         condition: service_healthy
       api-gateway:
-        condition: service_started
+        condition: service_healthy
       monitor-api:
-        condition: service_started
+        condition: service_healthy
     networks:
       - notification-net
     restart: unless-stopped
