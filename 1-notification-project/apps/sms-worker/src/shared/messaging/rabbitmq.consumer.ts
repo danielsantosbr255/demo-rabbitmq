@@ -4,20 +4,57 @@ import { AppError } from '../errors/app.error.js';
 import { logger } from '../logger/logger.js';
 
 interface ConsumerOptions {
-  queue: string;
+  channel: string;
   prefetch: number;
   maxRetries: number;
+  retryDelays: number[];
   handler: (msg: AsyncMessage) => Promise<void>;
 }
 
-export function startConsumer(connection: Connection, options: ConsumerOptions): Consumer {
-  const { queue, prefetch, maxRetries, handler } = options;
+export async function startConsumer(connection: Connection, options: ConsumerOptions): Promise<Consumer> {
+  const { channel, prefetch, maxRetries, retryDelays, handler } = options;
+  const queue = `q.${channel}`;
+
+  for (let i = 0; i < maxRetries; i++) {
+    const retryQueue = `${queue}.retry.${i}`;
+    const delay = retryDelays[i] ?? 10_000;
+    await connection.queueDeclare({
+      queue: retryQueue,
+      durable: true,
+      arguments: {
+        'x-dead-letter-exchange': 'notifications.retry.dlx',
+        'x-dead-letter-routing-key': channel,
+        'x-message-ttl': delay,
+      },
+    });
+  }
+
+  await connection.queueDeclare({
+    queue: 'q.notifications.dlq',
+    durable: true,
+  });
 
   const consumer = connection.createConsumer(
     {
       queue,
       qos: { prefetchCount: prefetch },
-      queueOptions: { passive: true },
+      queueOptions: {
+        durable: true,
+        arguments: {
+          'x-dead-letter-exchange': 'notifications.dlx',
+          'x-max-length': 50_000,
+        },
+      },
+      exchanges: [
+        { exchange: 'notifications.exchange', type: 'direct', durable: true },
+        { exchange: 'notifications.dlx', type: 'fanout', durable: true },
+        { exchange: 'notifications.retry.dlx', type: 'direct', durable: true },
+      ],
+      queueBindings: [
+        { exchange: 'notifications.exchange', queue, routingKey: channel },
+        { exchange: 'notifications.retry.dlx', queue, routingKey: channel },
+        { exchange: 'notifications.dlx', queue: 'q.notifications.dlq' },
+      ],
     },
     async (msg) => {
       const messageId = msg.messageId ?? 'unknown';
@@ -29,21 +66,16 @@ export function startConsumer(connection: Connection, options: ConsumerOptions):
       try {
         await handler(msg);
         childLogger.info('Message processed successfully');
-        // Returning void = ACK
       } catch (err) {
         childLogger.error({ err }, 'Message processing failed');
 
         const isFatal = err instanceof AppError && err.isFatal;
 
         if (isFatal || retryCount >= maxRetries) {
-          childLogger.error(
-            { totalAttempts: retryCount + 1, isFatal },
-            'Message sent to DLQ (no more retries)',
-          );
+          childLogger.error({ totalAttempts: retryCount + 1, isFatal }, 'Message sent to DLQ (no more retries)');
           return ConsumerStatus.DROP;
         }
 
-        // Publish to retry queue with incremented retry count
         const retryQueue = `${queue}.retry.${retryCount}`;
         const pub = connection.createPublisher({ confirm: true });
 
@@ -51,10 +83,8 @@ export function startConsumer(connection: Connection, options: ConsumerOptions):
           await pub.send(
             {
               routingKey: retryQueue,
-              headers: {
-                ...msg.headers,
-                'x-retry-count': retryCount + 1,
-              },
+              durable: true,
+              headers: { ...msg.headers, 'x-retry-count': retryCount + 1 },
               ...(msg.messageId && { messageId: msg.messageId }),
               ...(msg.correlationId && { correlationId: msg.correlationId }),
               contentType: 'application/json',
@@ -63,16 +93,10 @@ export function startConsumer(connection: Connection, options: ConsumerOptions):
             msg.body,
           );
 
-          childLogger.warn(
-            { retryQueue, nextRetry: retryCount },
-            'Message scheduled for retry',
-          );
+          childLogger.warn({ retryQueue, nextRetry: retryCount }, 'Message scheduled for retry');
         } finally {
           await pub.close();
         }
-
-        // ACK original so it doesn't go to DLX directly
-        // (we already moved it to the retry queue)
       }
     },
   );

@@ -13,10 +13,11 @@ async function main(): Promise<void> {
   const service = new SmsNotificationService(repository);
   const consumerHandler = new SmsNotificationConsumer(service);
 
-  const consumer = startConsumer(connection, {
-    queue: 'q.sms',
+  const consumer = await startConsumer(connection, {
+    channel: 'sms',
     prefetch: env.PREFETCH_COUNT,
     maxRetries: env.MAX_RETRIES,
+    retryDelays: [10_000, 30_000, 120_000],
     handler: (msg) => consumerHandler.handle(msg),
   });
 
