@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { EmailNotificationService } from '../src/notification/notification.service.js';
+import { EmailNotificationService } from '../src/modules/email/email.service.js';
 import { FatalNotificationError } from '../src/shared/errors/app.error.js';
-import type { IEmailRepository } from '../src/notification/notification.types.js';
+import type { IEmailRepository } from '../src/modules/email/email.types.js';
 
 const mockRepo: IEmailRepository = {
   send: vi.fn(),

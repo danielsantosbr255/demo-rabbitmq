@@ -1,12 +1,7 @@
 import { z } from 'zod/v4';
+try { process.loadEnvFile(); } catch { }
 
-try {
-  process.loadEnvFile();
-} catch (error) {
-  // Ignore in docker
-}
-
-const EnvSchema = z.object({
+const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error']).default('info'),
   RABBITMQ_URL: z.url(),
@@ -17,7 +12,7 @@ const EnvSchema = z.object({
   PREFETCH_COUNT: z.coerce.number().int().positive().default(1),
 });
 
-const parsed = EnvSchema.safeParse(process.env);
+const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
   console.error('❌ Invalid environment variables:', parsed.error.flatten());

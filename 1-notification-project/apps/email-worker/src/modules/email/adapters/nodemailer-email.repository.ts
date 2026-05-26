@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
-import type { IEmailRepository, SendEmailDto } from './notification.types.js';
-import { env } from '../shared/config/env.js';
+import type { IEmailRepository, SendEmailDto } from '../email.types.js';
+import { env } from '../../../infra/config/env.js';
 
 export class NodemailerEmailRepository implements IEmailRepository {
   private readonly transporter: nodemailer.Transporter;

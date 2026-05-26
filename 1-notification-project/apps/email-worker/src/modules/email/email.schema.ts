@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const notificationMessageSchema = z.object({
+export const emailMessageSchema = z.object({
   messageId: z.string(),
   correlationId: z.string(),
   channel: z.literal('email'),
