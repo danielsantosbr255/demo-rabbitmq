@@ -14,9 +14,12 @@ When the user asks you to commit changes ("fazer commit", "gerar commits", "comm
 3. **Group by Context**: Do not dump everything into a single commit! Group files by their logical context (e.g., frontend changes, database changes, documentation).
 4. **Stage and Commit Sequentially**: Use `git add <file/folder>` followed by `git commit -m "<message>"` for each logical group.
 
-## Semantic Commit Guidelines
-
 Always use the [Conventional Commits](https://www.conventionalcommits.org/) format. Ensure messages are in **English**, concise, and clearly explain the purpose.
+
+**Key Syntax Rules:**
+- The description MUST be written in the **imperative mood** (e.g., "add" instead of "adds" or "added", "fix" instead of "fixes" or "fixed"). Think of it as completing the sentence: "If applied, this commit will..."
+- The description MUST start with a **lowercase** letter.
+- The description MUST NOT end with a **period**.
 
 Format: `<type>(<scope>): <description>`
 
@@ -36,8 +39,11 @@ Use appropriate types:
 - `refactor`: A code change that neither fixes a bug nor adds a feature (e.g., architecture change, ORM updates)
 - `docs`: Documentation only changes
 - `chore`: Minor tasks, tooling, or agent-related structure
-- `style`: Formatting, missing semi-colons, etc.
+- `style`: Formatting, missing semi-colons, white-space, etc. (does not change production code logic)
 - `test`: Adding or correcting tests
+- `perf`: A code change that improves performance
+- `build`: Changes that affect the build system or external dependencies (e.g., npm, pnpm, go.mod)
+- `ci`: Changes to CI configuration files and scripts (e.g., GitHub Actions, GitLab CI)
 
 ### 2. Rich Scopes (Mandatory Rule)
 The `<scope>` must **always** be rich and explicitly identify the layer and the feature/resource affected.
