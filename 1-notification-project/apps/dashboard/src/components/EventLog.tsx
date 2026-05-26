@@ -1,16 +1,16 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import { format } from 'date-fns';
-import type { LogEvent } from '../types/dashboard';
+import { format } from "date-fns"
+import { AnimatePresence, motion } from "framer-motion"
+import type { LogEvent } from "../types/dashboard"
 
-const logColors: Record<LogEvent['type'], string> = {
-  info: '#6366f1',
-  success: '#10b981',
-  warning: '#f59e0b',
-  error: '#ef4444',
-};
+const logColors: Record<LogEvent["type"], string> = {
+  info: "#6366f1",
+  success: "#10b981",
+  warning: "#f59e0b",
+  error: "#ef4444",
+}
 
 interface EventLogProps {
-  logs: LogEvent[];
+  logs: LogEvent[]
 }
 
 export function EventLog({ logs }: EventLogProps) {
@@ -27,7 +27,7 @@ export function EventLog({ logs }: EventLogProps) {
               className="border-l-2 pl-2.5 py-1"
               style={{ borderColor: logColors[log.type] }}
             >
-              <span className="text-[9px] text-slate-400 block">{format(log.time, 'HH:mm:ss.SSS')}</span>
+              <span className="text-[9px] text-slate-400 block">{format(log.time, "HH:mm:ss.SSS")}</span>
               <span className="block leading-relaxed break-words" style={{ color: logColors[log.type] }}>
                 {log.message}
               </span>
@@ -38,5 +38,5 @@ export function EventLog({ logs }: EventLogProps) {
         )}
       </AnimatePresence>
     </div>
-  );
+  )
 }

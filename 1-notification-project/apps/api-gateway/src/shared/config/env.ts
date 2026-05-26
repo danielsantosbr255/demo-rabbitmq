@@ -1,20 +1,23 @@
-import { z } from 'zod/v4';
-try { process.loadEnvFile(); } catch { }
+import { z } from "zod/v4"
+
+try {
+  process.loadEnvFile()
+} catch {}
 
 const EnvSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error']).default('info'),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error"]).default("info"),
   PORT: z.coerce.number().int().positive().default(3000),
-  HOST: z.string().default('0.0.0.0'),
+  HOST: z.string().default("0.0.0.0"),
   RABBITMQ_URL: z.url(),
-});
+})
 
-const parsed = EnvSchema.safeParse(process.env);
+const parsed = EnvSchema.safeParse(process.env)
 
 if (!parsed.success) {
-  console.error('❌ Invalid environment variables:', parsed.error.flatten());
-  process.exit(1);
+  console.error("❌ Invalid environment variables:", parsed.error.flatten())
+  process.exit(1)
 }
 
-export const env = parsed.data;
-export type Env = z.infer<typeof EnvSchema>;
+export const env = parsed.data
+export type Env = z.infer<typeof EnvSchema>

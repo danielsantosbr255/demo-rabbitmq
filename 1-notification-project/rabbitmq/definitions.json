@@ -9,9 +9,7 @@
       "name": "admin",
       "password_hash": "yMnU+LDqfLIaAb0He0fJVOlT4bhl92WYe2zG3Das1cKg52LJ",
       "hashing_algorithm": "rabbit_password_hashing_sha256",
-      "tags": [
-        "administrator"
-      ]
+      "tags": ["administrator"]
     }
   ],
   "permissions": [

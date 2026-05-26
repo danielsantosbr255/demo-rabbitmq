@@ -1,26 +1,26 @@
-import { type ReactNode } from 'react';
-import type { QueueStats } from '../types/dashboard';
-import { QueueNode } from './QueueNode';
+import type { ReactNode } from "react"
+import type { QueueStats } from "../types/dashboard"
+import { QueueNode } from "./QueueNode"
 
 interface PipelineItem {
-  title: string;
-  queueName: string;
-  icon: ReactNode;
-  activeColor: string;
-  activeBg: string;
+  title: string
+  queueName: string
+  icon: ReactNode
+  activeColor: string
+  activeBg: string
 }
 
 interface PipelineSectionProps {
-  label: string;
-  icon: ReactNode;
-  items: PipelineItem[];
-  queues: QueueStats[];
-  clockOffset: number;
+  label: string
+  icon: ReactNode
+  items: PipelineItem[]
+  queues: QueueStats[]
+  clockOffset: number
 }
 
 export function PipelineSection({ label, icon, items, queues, clockOffset }: PipelineSectionProps) {
-  const sectionId = `pipeline-${label.toLowerCase().replace(/\s+/g, '-')}`;
-  const getQueue = (queueName: string) => queues.find((queue) => queue.name === queueName);
+  const sectionId = `pipeline-${label.toLowerCase().replace(/\s+/g, "-")}`
+  const getQueue = (queueName: string) => queues.find((queue) => queue.name === queueName)
 
   return (
     <section aria-labelledby={sectionId} className="space-y-2">
@@ -44,5 +44,5 @@ export function PipelineSection({ label, icon, items, queues, clockOffset }: Pip
         ))}
       </div>
     </section>
-  );
+  )
 }

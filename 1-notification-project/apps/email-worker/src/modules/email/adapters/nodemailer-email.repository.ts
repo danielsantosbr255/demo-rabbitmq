@@ -1,9 +1,9 @@
-import nodemailer from 'nodemailer';
-import type { IEmailRepository, SendEmailDto } from '../email.types.js';
-import { env } from '../../../infra/config/env.js';
+import nodemailer from "nodemailer"
+import { env } from "../../../infra/config/env.js"
+import type { IEmailRepository, SendEmailDto } from "../email.types.js"
 
 export class NodemailerEmailRepository implements IEmailRepository {
-  private readonly transporter: nodemailer.Transporter;
+  private readonly transporter: nodemailer.Transporter
 
   constructor() {
     this.transporter = nodemailer.createTransport({
@@ -13,7 +13,7 @@ export class NodemailerEmailRepository implements IEmailRepository {
       ignoreTLS: true,
       connectionTimeout: 5000,
       socketTimeout: 5000,
-    });
+    })
   }
 
   async send(dto: SendEmailDto): Promise<void> {
@@ -22,6 +22,6 @@ export class NodemailerEmailRepository implements IEmailRepository {
       to: dto.to,
       subject: dto.subject,
       text: dto.body,
-    });
+    })
   }
 }
