@@ -1,9 +1,14 @@
 import { logger } from "./infra/logger/logger.js"
-import { closeConnection } from "./infra/messaging/rabbitmq.client.js"
-import { startEmailWorker } from "./modules/email/email.module.js"
+import { closeConnection, getConnection } from "./infra/messaging/rabbitmq.client.js"
+import { RabbitMQEmailConsumer } from "./infra/messaging/rabbitmq-email.consumer.js"
+import { createEmailNotificationService } from "./modules/email/email.module.js"
 
 async function main(): Promise<void> {
-  const consumer = await startEmailWorker()
+  const connection = getConnection()
+  const service = createEmailNotificationService()
+  const consumer = new RabbitMQEmailConsumer(connection, service)
+
+  await consumer.start()
 
   const shutdown = async (signal: string) => {
     logger.info({ signal }, "Shutdown signal received")
