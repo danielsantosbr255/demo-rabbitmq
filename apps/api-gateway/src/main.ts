@@ -1,7 +1,7 @@
+import { closeConnection } from "./infra/messaging/rabbitmq.client.js"
 import { buildServer } from "./server.js"
 import { env } from "./shared/config/env.js"
 import { logger } from "./shared/logger/logger.js"
-import { closeConnection } from "./shared/messaging/rabbitmq.client.js"
 
 async function main(): Promise<void> {
   const app = await buildServer()
