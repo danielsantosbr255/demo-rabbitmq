@@ -1,6 +1,6 @@
 import { z } from "zod/v4"
 
-export const notificationMessageSchema = z.object({
+export const smsMessageSchema = z.object({
   messageId: z.string(),
   correlationId: z.string(),
   channel: z.literal("sms"),
@@ -15,4 +15,5 @@ export const notificationMessageSchema = z.object({
   }),
 })
 
-export type NotificationMessage = z.infer<typeof notificationMessageSchema>
+export type TSmsMessage = z.infer<typeof smsMessageSchema>
+export type SmsPayload = z.infer<typeof smsMessageSchema>["payload"]

@@ -1,29 +1,32 @@
-import { SmsNotificationConsumer } from "./notification/notification.consumer.js"
-import { StubSmsRepository } from "./notification/notification.repository.js"
-import { SmsNotificationService } from "./notification/notification.service.js"
+import { closeConnection, getConnection } from "./infra/messaging/rabbitmq.client.js"
+import { RabbitMQConsumer } from "./infra/messaging/rabbitmq.consumer.js"
+import { SmsNotificationHandler } from "./modules/sms/sms.handler.js"
+import { StubSmsRepository } from "./modules/sms/sms.repository.js"
+import type { TSmsMessage } from "./modules/sms/sms.schema.js"
+import { SmsNotificationService } from "./modules/sms/sms.service.js"
 import { env } from "./shared/config/env.js"
 import { logger } from "./shared/logger/logger.js"
-import { closeConnection, getConnection } from "./shared/messaging/rabbitmq.client.js"
-import { startConsumer } from "./shared/messaging/rabbitmq.consumer.js"
 
 async function main(): Promise<void> {
   const connection = getConnection()
 
   const repository = new StubSmsRepository()
-  const service = new SmsNotificationService(repository)
-  const consumerHandler = new SmsNotificationConsumer(service)
+  const smsService = new SmsNotificationService(repository)
+  const smsHandler = new SmsNotificationHandler(smsService)
 
-  const consumer = await startConsumer(connection, {
+  const consumer = new RabbitMQConsumer<TSmsMessage>(connection, {
     channel: "sms",
     prefetch: env.PREFETCH_COUNT,
     maxRetries: env.MAX_RETRIES,
     retryDelays: [10_000, 30_000, 120_000],
-    handler: (msg) => consumerHandler.handle(msg),
+    handler: smsHandler.handle.bind(smsHandler),
   })
+
+  await consumer.start()
 
   const shutdown = async (signal: string) => {
     logger.info({ signal }, "Shutdown signal received")
-    await consumer.close()
+    await consumer.stop()
     await closeConnection()
     process.exit(0)
   }

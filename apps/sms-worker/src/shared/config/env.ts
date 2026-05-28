@@ -2,9 +2,7 @@ import { z } from "zod/v4"
 
 try {
   process.loadEnvFile()
-} catch (_error) {
-  // Ignore in docker
-}
+} catch {}
 
 const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
@@ -12,6 +10,7 @@ const EnvSchema = z.object({
   RABBITMQ_URL: z.url(),
   MAX_RETRIES: z.coerce.number().int().nonnegative().default(3),
   PREFETCH_COUNT: z.coerce.number().int().positive().default(1),
+  SMS_SEND_DELAY_IN_MS: z.coerce.number().int().positive().default(0),
 })
 
 const parsed = EnvSchema.safeParse(process.env)
