@@ -15,3 +15,5 @@ export const emailMessageSchema = z.object({
     retryCount: z.number(),
   }),
 })
+
+export type TEmailMessage = z.infer<typeof emailMessageSchema>

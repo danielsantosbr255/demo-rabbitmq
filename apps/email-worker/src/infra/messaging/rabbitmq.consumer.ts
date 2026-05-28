@@ -1,31 +1,36 @@
 import type { AsyncMessage, Connection, Consumer } from "rabbitmq-client"
 import { ConsumerStatus } from "rabbitmq-client"
-import { emailMessageSchema } from "../../modules/email/email.schema.js"
-import type { EmailNotificationService } from "../../modules/email/email.service.js"
+import { logger } from "../../infra/logger/logger.js"
 import { AppError } from "../../shared/errors/app.error.js"
-import { env } from "../config/env.js"
-import { logger } from "../logger/logger.js"
 import { RabbitMQRetryPublisher } from "./rabbitmq-retry.publisher.js"
-import { CHANNEL, DLQ, DLX, EXCHANGE, QUEUE, RETRY_DLX, setupRabbitMQTopology } from "./rabbitmq-topology.js"
+import type { ConsumerOptions } from "./types.js"
 
-export class RabbitMQEmailConsumer {
+const EXCHANGE = "notifications.exchange"
+const DLX = "notifications.dlx"
+const RETRY_DLX = "notifications.retry.dlx"
+const DLQ = "q.notifications.dlq"
+
+export class RabbitMQConsumer<T = object> {
   private consumer: Consumer | null = null
   private readonly retryPublisher: RabbitMQRetryPublisher
 
   constructor(
     private readonly connection: Connection,
-    private readonly service: EmailNotificationService,
+    private readonly options: ConsumerOptions<T>,
   ) {
     this.retryPublisher = new RabbitMQRetryPublisher(connection)
   }
 
   async start(): Promise<void> {
-    await setupRabbitMQTopology(this.connection)
+    const { channel, prefetch } = this.options
+    const queue = `q.${channel}`
+
+    await this.setupRabbitMQTopology()
 
     this.consumer = this.connection.createConsumer(
       {
-        queue: QUEUE,
-        qos: { prefetchCount: env.PREFETCH_COUNT },
+        queue,
+        qos: { prefetchCount: prefetch },
         queueOptions: {
           durable: true,
           arguments: {
@@ -39,21 +44,13 @@ export class RabbitMQEmailConsumer {
           { exchange: RETRY_DLX, type: "direct", durable: true },
         ],
         queueBindings: [
-          { exchange: EXCHANGE, queue: QUEUE, routingKey: CHANNEL },
-          { exchange: RETRY_DLX, queue: QUEUE, routingKey: CHANNEL },
+          { exchange: EXCHANGE, queue, routingKey: channel },
+          { exchange: RETRY_DLX, queue, routingKey: channel },
           { exchange: DLX, queue: DLQ },
         ],
       },
       this.handleMessage.bind(this),
     )
-
-    this.consumer.on("error", (err) => {
-      logger.error({ err, queue: QUEUE }, "Consumer error")
-    })
-
-    this.consumer.on("ready", () => {
-      logger.info({ queue: QUEUE, prefetch: env.PREFETCH_COUNT }, "Consumer ready")
-    })
   }
 
   async stop(): Promise<void> {
@@ -65,37 +62,50 @@ export class RabbitMQEmailConsumer {
   }
 
   private async handleMessage(msg: AsyncMessage): Promise<number | undefined> {
+    const { channel, maxRetries, handler } = this.options
+
+    const queue = `q.${channel}`
     const messageId = msg.messageId ?? "unknown"
     const retryCount = Number(msg.headers?.["x-retry-count"] ?? 0)
-    const childLogger = logger.child({ messageId, queue: QUEUE, retryCount })
+    const childLogger = logger.child({ messageId, queue, retryCount })
 
     childLogger.info("Message received")
 
     try {
-      const raw = msg.body
-      const parsed = emailMessageSchema.safeParse(raw)
-
-      if (!parsed.success) {
-        childLogger.error({ issues: parsed.error.issues }, "Invalid message schema — sending to DLQ immediately")
-        return ConsumerStatus.DROP
-      }
-
-      const { payload } = parsed.data
-
-      await this.service.process(parsed.data.messageId, payload)
-
+      await handler(msg.body)
       childLogger.info("Message processed successfully")
     } catch (err) {
       childLogger.error({ err }, "Message processing failed")
 
       const isFatal = err instanceof AppError && err.isFatal
 
-      if (isFatal || retryCount >= env.MAX_RETRIES) {
+      if (isFatal || retryCount >= maxRetries) {
         childLogger.error({ totalAttempts: retryCount + 1, isFatal }, "Message sent to DLQ (no more retries)")
         return ConsumerStatus.DROP
       }
 
-      await this.retryPublisher.publishRetry(msg, retryCount, childLogger)
+      await this.retryPublisher.publishRetry(msg, queue, retryCount, childLogger)
     }
+  }
+
+  private async setupRabbitMQTopology(): Promise<void> {
+    const { channel, maxRetries, retryDelays } = this.options
+    const queue = `q.${channel}`
+
+    for (let i = 0; i < maxRetries; i++) {
+      const retryQueue = `${queue}.retry.${i}`
+      const delay = retryDelays[i] ?? 10_000
+      await this.connection.queueDeclare({
+        queue: retryQueue,
+        durable: true,
+        arguments: {
+          "x-dead-letter-exchange": "notifications.retry.dlx",
+          "x-dead-letter-routing-key": channel,
+          "x-message-ttl": delay,
+        },
+      })
+    }
+
+    await this.connection.queueDeclare({ queue: DLQ, durable: true })
   }
 }

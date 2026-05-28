@@ -1,12 +1,24 @@
+import { env } from "./infra/config/env.js"
 import { logger } from "./infra/logger/logger.js"
 import { closeConnection, getConnection } from "./infra/messaging/rabbitmq.client.js"
-import { RabbitMQEmailConsumer } from "./infra/messaging/rabbitmq-email.consumer.js"
+import { RabbitMQConsumer } from "./infra/messaging/rabbitmq.consumer.js"
+import { EmailNotificationHandler } from "./modules/email/email.handler.js"
 import { createEmailNotificationService } from "./modules/email/email.module.js"
+import type { TEmailMessage } from "./modules/email/email.schema.js"
 
 async function main(): Promise<void> {
   const connection = getConnection()
+
   const service = createEmailNotificationService()
-  const consumer = new RabbitMQEmailConsumer(connection, service)
+  const handler = new EmailNotificationHandler(service)
+
+  const consumer = new RabbitMQConsumer<TEmailMessage>(connection, {
+    channel: "email",
+    prefetch: env.PREFETCH_COUNT,
+    maxRetries: env.MAX_RETRIES,
+    retryDelays: [10_000, 30_000, 120_000],
+    handler: handler.handle.bind(handler),
+  })
 
   await consumer.start()
 

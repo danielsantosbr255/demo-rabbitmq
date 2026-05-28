@@ -1,15 +1,9 @@
-export interface EmailPayload {
-  to: string
-  subject: string
-  body: string
-}
-
-export interface SendEmailDto {
+export type TEmailPayload = {
   to: string
   subject: string
   body: string
 }
 
 export interface IEmailRepository {
-  send(dto: SendEmailDto): Promise<void>
+  send(payload: TEmailPayload): Promise<void>
 }

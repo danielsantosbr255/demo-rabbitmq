@@ -1,18 +1,17 @@
 import type { Logger } from "pino"
 import type { AsyncMessage, Connection, Publisher } from "rabbitmq-client"
-import { QUEUE } from "./rabbitmq-topology.js"
 
 export class RabbitMQRetryPublisher {
   private publisher: Publisher | null = null
 
   constructor(private readonly connection: Connection) {}
 
-  async publishRetry(msg: AsyncMessage, retryCount: number, logger: Logger): Promise<void> {
+  async publishRetry(msg: AsyncMessage, queue: string, retryCount: number, logger: Logger): Promise<void> {
     if (!this.publisher) {
       this.publisher = this.connection.createPublisher({ confirm: true })
     }
 
-    const retryQueue = `${QUEUE}.retry.${retryCount}`
+    const retryQueue = `${queue}.retry.${retryCount}`
 
     await this.publisher.send(
       {

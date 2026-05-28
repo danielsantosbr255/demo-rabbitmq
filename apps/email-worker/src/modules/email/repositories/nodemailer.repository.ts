@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer"
 import { env } from "../../../infra/config/env.js"
-import type { IEmailRepository, SendEmailDto } from "../email.types.js"
+import type { IEmailRepository, TEmailPayload } from "../email.types.js"
 
 export class NodemailerEmailRepository implements IEmailRepository {
   private readonly transporter: nodemailer.Transporter
@@ -16,7 +16,7 @@ export class NodemailerEmailRepository implements IEmailRepository {
     })
   }
 
-  async send(dto: SendEmailDto): Promise<void> {
+  async send(dto: TEmailPayload): Promise<void> {
     await this.transporter.sendMail({
       from: env.EMAIL_FROM,
       to: dto.to,
