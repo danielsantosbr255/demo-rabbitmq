@@ -1,0 +1,51 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  validate:
+    name: Lint, Test & Validate Commits
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Biome checks
+        run: pnpm biome:check
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Lint commit messages
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+          else
+            if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ] || [ -z "${{ github.event.before }}" ]; then
+              # Default to checking only the HEAD commit if it's a new branch or before SHA is empty
+              npx commitlint --from HEAD~1 --to HEAD --verbose
+            else
+              npx commitlint --from ${{ github.event.before }} --to ${{ github.event.after }} --verbose
+            fi
+          fi
