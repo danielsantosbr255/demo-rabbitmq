@@ -1,7 +1,7 @@
 import type { AsyncMessage, Connection, Consumer } from "rabbitmq-client"
 import { ConsumerStatus } from "rabbitmq-client"
 import { AppError } from "../../shared/errors/app.error.js"
-import { logger } from "../../shared/logger/logger.js"
+import { logger } from "../logger/logger.js"
 import { RabbitMQRetryPublisher } from "./rabbitmq-retry.publisher.js"
 import type { ConsumerOptions } from "./types.js"
 

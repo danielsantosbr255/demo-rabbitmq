@@ -1,5 +1,5 @@
+import { logger } from "../../infra/logger/logger.js"
 import { FatalNotificationError } from "../../shared/errors/app.error.js"
-import { logger } from "../../shared/logger/logger.js"
 import type { TSmsMessage } from "./sms.schema.js"
 import { smsMessageSchema } from "./sms.schema.js"
 import type { SmsNotificationService } from "./sms.service.js"
