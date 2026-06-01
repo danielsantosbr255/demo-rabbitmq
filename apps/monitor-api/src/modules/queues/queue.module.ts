@@ -9,7 +9,7 @@ import {
 } from "./queue.schema.js"
 import { QueueService } from "./queue.service.js"
 
-async function QueueModule(fastify: FastifyInstance) {
+export async function QueueModule(fastify: FastifyInstance) {
   const queueService = new QueueService()
   const queueController = new QueueController(queueService)
 
@@ -20,5 +20,3 @@ async function QueueModule(fastify: FastifyInstance) {
   app.get("/dlq", { schema: GetDlqRouteSchema }, queueController.getDlq)
   app.delete("/dlq", { schema: DeleteDlqRouteSchema }, queueController.deleteDlq)
 }
-
-export { QueueModule }

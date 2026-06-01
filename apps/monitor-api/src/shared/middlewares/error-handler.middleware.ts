@@ -1,5 +1,5 @@
 import type { FastifyError, FastifyReply, FastifyRequest } from "fastify"
-import { logger } from "../logger/logger.js"
+import { logger } from "../../infra/logger/logger.js"
 
 export const errorHandlerMiddleware = (
   error: FastifyError,

@@ -1,4 +1,4 @@
-import { env } from "../config/env.js"
+import { env } from "../../config/env.js"
 
 const rabbitUrl = new URL(env.RABBITMQ_API_URL)
 const RABBIT_BASE = `${rabbitUrl.protocol}//${rabbitUrl.host}/api`

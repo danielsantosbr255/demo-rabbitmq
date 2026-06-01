@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { QueueService } from "../src/modules/queues/queue.service.js"
 
 // Mock the rabbitFetch module so no real HTTP calls are made
-vi.mock("../src/shared/messaging/rabbitmq.client.js", () => ({
+vi.mock("../src/shared/utils/rabbitmq.util.js", () => ({
   rabbitFetch: vi.fn(),
 }))
 
-import { rabbitFetch } from "../src/shared/messaging/rabbitmq.client.js"
+import { rabbitFetch } from "../src/shared/utils/rabbitmq.util.js"
 
 const mockFetch = vi.mocked(rabbitFetch)
 

@@ -1,4 +1,5 @@
 import type { FastifyReply, FastifyRequest } from "fastify"
+import { logger } from "../../infra/logger/logger.js"
 import type { QueueService } from "./queue.service.js"
 
 export class QueueController {
@@ -20,13 +21,20 @@ export class QueueController {
     })
 
     const sendUpdate = async () => {
-      const data = await this.queueService.getQueues()
-      reply.raw.write(`data: ${JSON.stringify(data)}\n\n`)
+      try {
+        const data = await this.queueService.getQueues()
+        reply.raw.write(`data: ${JSON.stringify(data)}\n\n`)
+      } catch (err) {
+        logger.warn({ err }, "Failed to fetch queue data for SSE stream")
+        reply.raw.write(`event: error\ndata: ${JSON.stringify({ error: "Failed to fetch queue data" })}\n\n`)
+      }
     }
 
     await sendUpdate()
 
-    const interval = setInterval(sendUpdate, 500)
+    const interval = setInterval(() => {
+      void sendUpdate()
+    }, 500)
 
     request.raw.on("close", () => {
       clearInterval(interval)

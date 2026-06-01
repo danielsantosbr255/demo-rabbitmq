@@ -9,7 +9,6 @@ const EnvSchema = z.object({
   LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error"]).default("info"),
   PORT: z.coerce.number().int().positive().default(3001),
   HOST: z.string().default("0.0.0.0"),
-  RABBITMQ_URL: z.url(),
   RABBITMQ_API_URL: z.url().default("http://admin:admin@localhost:15672"),
 })
 

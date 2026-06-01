@@ -1,4 +1,4 @@
-import { rabbitFetch } from "../../shared/messaging/rabbitmq.client.js"
+import { rabbitFetch } from "../../shared/utils/rabbitmq.util.js"
 
 interface RabbitQueue {
   name: string
