@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto"
-import { logger } from "../../shared/logger/logger.js"
+import { logger } from "../../infra/logger/logger.js"
 import type { CreateNotificationDto, EnqueueResult, INotificationPublisher } from "./notification.types.js"
 
 export class NotificationService {

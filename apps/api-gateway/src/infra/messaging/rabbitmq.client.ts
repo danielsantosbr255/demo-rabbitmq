@@ -1,6 +1,6 @@
 import { Connection } from "rabbitmq-client"
-import { env } from "../../shared/config/env.js"
-import { logger } from "../../shared/logger/logger.js"
+import { env } from "../../config/env.js"
+import { logger } from "../logger/logger.js"
 
 let connection: Connection | null = null
 

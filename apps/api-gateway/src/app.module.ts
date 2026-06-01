@@ -1,16 +1,23 @@
 import cors from "@fastify/cors"
 import fastifySwagger from "@fastify/swagger"
+import type { ZodTypeProvider } from "@fastify/type-provider-zod"
 import { jsonSchemaTransform, serializerCompiler, validatorCompiler } from "@fastify/type-provider-zod"
 import fastifyApiReference from "@scalar/fastify-api-reference"
-import fastify from "fastify"
+import { fastify } from "fastify"
+import { AppController } from "./app.controller.js"
+import { logger } from "./infra/logger/logger.js"
 import { notificationModule } from "./modules/notification/notification.module.js"
-import { logger } from "./shared/logger/logger.js"
 import { errorHandlerMiddleware } from "./shared/middlewares/error-handler.middleware.js"
 
-export async function buildServer() {
+export async function AppModule() {
   const app = fastify({ loggerInstance: logger })
 
-  await app.register(cors, { origin: true })
+  const appController = new AppController()
+
+  await app.register(cors, {
+    origin: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  })
 
   app.setValidatorCompiler(validatorCompiler)
   app.setSerializerCompiler(serializerCompiler)
@@ -36,6 +43,7 @@ export async function buildServer() {
   })
 
   await app.register(notificationModule)
+  app.withTypeProvider<ZodTypeProvider>().get("/health", appController.health)
 
   app.setErrorHandler(errorHandlerMiddleware)
 

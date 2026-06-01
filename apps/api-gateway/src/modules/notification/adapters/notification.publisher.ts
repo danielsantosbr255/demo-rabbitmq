@@ -1,6 +1,6 @@
 import type { Connection, Publisher } from "rabbitmq-client"
+import { logger } from "../../../infra/logger/logger.js"
 import { getConnection } from "../../../infra/messaging/rabbitmq.client.js"
-import { logger } from "../../../shared/logger/logger.js"
 import type { INotificationPublisher, NotificationMessage } from "../notification.types.js"
 
 const EXCHANGE = "notifications.exchange"
