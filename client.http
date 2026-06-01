@@ -11,3 +11,12 @@ Content-Type: application/json
         "body": "Hello, this is a test notification"
     }
 }
+
+###
+GET http://localhost:3001/queues
+
+###
+GET http://localhost:3001/queues/dlq
+
+###
+GET http://localhost:3001/queues/stream
