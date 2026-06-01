@@ -7,6 +7,7 @@ import { fastify } from "fastify"
 import { AppController } from "./app.controller.js"
 import { logger } from "./infra/logger/logger.js"
 import { notificationModule } from "./modules/notification/notification.module.js"
+import { HealthRouteSchema } from "./modules/notification/notification.schema.js"
 import { errorHandlerMiddleware } from "./shared/middlewares/error-handler.middleware.js"
 
 export async function AppModule() {
@@ -43,7 +44,7 @@ export async function AppModule() {
   })
 
   await app.register(notificationModule)
-  app.withTypeProvider<ZodTypeProvider>().get("/health", appController.health)
+  app.withTypeProvider<ZodTypeProvider>().get("/health", { schema: HealthRouteSchema }, appController.health)
 
   app.setErrorHandler(errorHandlerMiddleware)
 
