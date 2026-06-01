@@ -13,6 +13,7 @@ const envSchema = z.object({
   EMAIL_FROM: z.string().default("notifications@example.com"),
   MAX_RETRIES: z.coerce.number().int().nonnegative().default(3),
   PREFETCH_COUNT: z.coerce.number().int().positive().default(1),
+  EMAIL_SEND_DELAY_MS: z.coerce.number().int().nonnegative().default(0),
 })
 
 const parsed = envSchema.safeParse(process.env)
