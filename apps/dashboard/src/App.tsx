@@ -5,11 +5,13 @@ import { EventLog } from "./components/EventLog"
 import { Header } from "./components/Header"
 import { NotificationForm } from "./components/NotificationForm"
 import { PipelineSection } from "./components/PipelineSection"
+import { useDarkMode } from "./hooks/useDarkMode"
 import { useDashboardData } from "./hooks/useDashboardData"
 import { postNotification } from "./services/api"
 import type { NotificationFormData } from "./types/dashboard"
 
 function App() {
+  const { toggleTheme, isDarkMode } = useDarkMode()
   const { queues, dlqMessages, logs, isPurging, clockOffset, addLog, fetchDlq, clearDlq } = useDashboardData()
 
   const [isSending, setIsSending] = useState(false)
@@ -93,7 +95,7 @@ function App() {
 
   return (
     <main
-      className="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased"
+      className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased transition-colors"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
       <Header
@@ -102,16 +104,18 @@ function App() {
           addLog("Sincronização manual realizada.", "info")
         }}
         isPipelineActive={true}
+        isDarkMode={isDarkMode}
+        toggleTheme={toggleTheme}
       />
 
       <div className="grid min-h-[calc(100vh-57px)] grid-cols-1 gap-0 xl:grid-cols-[320px_minmax(0,1fr)_320px] overflow-hidden">
-        <aside className="w-full xl:max-w-[320px] border-r border-slate-200 bg-white flex flex-col overflow-y-auto">
+        <aside className="w-full xl:max-w-[320px] border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col overflow-y-auto transition-colors">
           <div className="p-5 flex flex-col gap-4 flex-1">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold flex items-center gap-2 text-slate-700">
+              <h2 className="text-sm font-semibold flex items-center gap-2 text-slate-700 dark:text-slate-200">
                 <Server className="w-4 h-4 text-indigo-400" /> Despachante API Gateway
               </h2>
-              <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
+              <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md transition-colors">
                 :3000
               </span>
             </div>
@@ -121,12 +125,12 @@ function App() {
         </aside>
 
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="shrink-0 border-b border-slate-200 bg-white p-5">
+          <div className="shrink-0 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 transition-colors">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold flex items-center gap-2 text-slate-700">
+              <h2 className="text-sm font-semibold flex items-center gap-2 text-slate-700 dark:text-slate-200">
                 <Activity className="w-4 h-4 text-emerald-500" /> Pipeline de Resiliência Ativo
               </h2>
-              <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
+              <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md transition-colors">
                 RABBITMQ
               </span>
             </div>
@@ -138,6 +142,7 @@ function App() {
                 items={emailPipelineItems}
                 queues={queues}
                 clockOffset={clockOffset}
+                isDarkMode={isDarkMode}
               />
               <PipelineSection
                 label="Topologia SMS"
@@ -145,10 +150,11 @@ function App() {
                 items={smsPipelineItems}
                 queues={queues}
                 clockOffset={clockOffset}
+                isDarkMode={isDarkMode}
               />
             </div>
 
-            <p className="text-[11px] text-slate-400 mt-3 flex items-center gap-1">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-3 flex items-center gap-1">
               <HelpCircle className="w-3.5 h-3.5" /> 3 tentativas com atraso exponencial antes da fila morta (DLQ).
             </p>
           </div>
@@ -156,12 +162,14 @@ function App() {
           <DlqInspector dlqMessages={dlqMessages} isPurging={isPurging} onRefresh={fetchDlq} onClear={clearDlq} />
         </div>
 
-        <aside className="w-full xl:max-w-[320px] border-l border-slate-200 bg-white flex flex-col">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-            <h2 className="text-sm font-semibold flex items-center gap-2 text-slate-700">
+        <aside className="w-full xl:max-w-[320px] border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col transition-colors">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800 transition-colors">
+            <h2 className="text-sm font-semibold flex items-center gap-2 text-slate-700 dark:text-slate-200">
               <Activity className="w-4 h-4 text-slate-400" /> Stream de Eventos
             </h2>
-            <span className="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">SSE STREAM</span>
+            <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md transition-colors">
+              SSE STREAM
+            </span>
           </div>
 
           <EventLog logs={logs} />

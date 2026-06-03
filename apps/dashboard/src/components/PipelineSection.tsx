@@ -16,9 +16,10 @@ interface PipelineSectionProps {
   items: PipelineItem[]
   queues: QueueStats[]
   clockOffset: number
+  isDarkMode: boolean
 }
 
-export function PipelineSection({ label, icon, items, queues, clockOffset }: PipelineSectionProps) {
+export function PipelineSection({ label, icon, items, queues, clockOffset, isDarkMode }: PipelineSectionProps) {
   const sectionId = `pipeline-${label.toLowerCase().replace(/\s+/g, "-")}`
   const getQueue = (queueName: string) => queues.find((queue) => queue.name === queueName)
 
@@ -26,7 +27,10 @@ export function PipelineSection({ label, icon, items, queues, clockOffset }: Pip
     <section aria-labelledby={sectionId} className="space-y-2">
       <div className="flex items-center gap-2 mb-2">
         {icon}
-        <h3 id={sectionId} className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+        <h3
+          id={sectionId}
+          className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider"
+        >
           {label}
         </h3>
       </div>
@@ -40,6 +44,7 @@ export function PipelineSection({ label, icon, items, queues, clockOffset }: Pip
             activeColor={item.activeColor}
             activeBg={item.activeBg}
             clockOffset={clockOffset}
+            isDarkMode={isDarkMode}
           />
         ))}
       </div>
