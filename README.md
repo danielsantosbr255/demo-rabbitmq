@@ -107,8 +107,10 @@ Se quiser rodar os processos Node diretamente no seu sistema operacional local:
 1. Inicie o RabbitMQ e o Mailpit em background:
 
    ```bash
-   pnpm infra
+   pnpm infra:up
    ```
+
+   *(Para parar os containers posteriormente, execute `pnpm infra:down`).*
 
 2. Instale as dependências de todo o monorepo:
 
@@ -227,7 +229,7 @@ A escolha de SSE em detrimento de uma solução como **WebSockets** foi tomada d
 - **Frameworks HTTP (Fastify)**: Utilizado no `api-gateway` e no `monitor-api` por ser leve, performático e compatível com schemas modernos.
 - **Validação de Schemas**: Zod & `@fastify/type-provider-zod` para validação em tempo de execução dos dados de entrada.
 - **Documentação de API**: Swagger + `@scalar/fastify-api-reference` para renderizar interfaces modernas de documentação no endpoint `/docs`.
-- **Frontend**: React, Vite, Tailwind CSS / Vanilla CSS e ícones do Lucide.
+- **Frontend**: React, Vite, Tailwind CSS (v4 com suporte a Dark Mode reativo e persistente) e ícones do Lucide.
 - **Mensageria**: RabbitMQ 4.3 (Alpine) com o plugin Management ativado.
 - **Integração de E-mail**: Nodemailer para comunicação SMTP + **Mailpit** atuando como servidor de e-mail mock de alta fidelidade para testes em ambiente local.
 - **Containers**: Docker e Docker Compose, utilizando recursos de Multi-stage builds e desenvolvimento assistido por `docker compose watch`.
@@ -270,6 +272,13 @@ Depois de passar pelas 3 retentativas na fila de SMS descritas acima, a mensagem
 1. Ao final dos 2 minutos da última retentativa, verifique a seção **Dead Letter Queue (DLQ)** no rodapé do dashboard.
 2. A mensagem inválida aparecerá na lista da DLQ detalhando o motivo do erro.
 3. Você poderá realizar uma auditoria do payload que falhou ou simplesmente limpar a DLQ clicando no botão **Limpar Fila Morta (Purge)**.
+
+### 4. Testar o Modo Escuro (Dark Mode)
+
+1. No canto superior direito do **Dashboard**, clique no botão alternador (representado por um ícone de **Lua** 🌙 ou **Sol** ☀️).
+2. A aplicação alternará instantaneamente as cores de fundo, bordas, formulários e animações do pipeline de resiliência.
+3. Atualize a página no navegador; a sua preferência persistirá graças à integração com o `localStorage`.
+4. Caso seja sua primeira visita e não houver preferência salva, o sistema detectará e aplicará automaticamente o tema correspondente ao do seu sistema operacional.
 
 ---
 
