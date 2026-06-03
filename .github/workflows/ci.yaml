@@ -42,10 +42,11 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
           else
-            if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ] || [ -z "${{ github.event.before }}" ]; then
-              # Default to checking only the HEAD commit if it's a new branch or before SHA is empty
-              npx commitlint --from HEAD~1 --to HEAD --verbose
-            else
+            if git rev-parse "${{ github.event.before }}" >/dev/null 2>&1; then
               npx commitlint --from ${{ github.event.before }} --to ${{ github.event.after }} --verbose
+            else
+              npx commitlint --from HEAD~1 --to HEAD --verbose
             fi
           fi
+
+
