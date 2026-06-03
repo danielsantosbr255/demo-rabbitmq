@@ -41,5 +41,10 @@
       "!**/pnpm-lock.yaml",
       "!**/package-lock.json"
     ]
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
   }
 }
