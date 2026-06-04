@@ -1,4 +1,3 @@
-import { motion } from "framer-motion"
 import type { ReactNode } from "react"
 import type { QueueStats } from "../types/dashboard"
 import { TimerBar } from "./TimerBar"
@@ -7,74 +6,61 @@ interface QueueNodeProps {
   title: string
   queue?: QueueStats
   icon: ReactNode
-  activeColor: string
-  activeBg: string
+  blockClass: string
   clockOffset: number
-  isDarkMode: boolean
 }
 
-export function QueueNode({ title, queue, icon, activeColor, activeBg, clockOffset, isDarkMode }: QueueNodeProps) {
+export function QueueNode({ title, queue, icon, blockClass, clockOffset }: QueueNodeProps) {
   const count = queue?.messages ?? 0
   const unacked = queue?.messagesUnacked ?? 0
   const isProcessing = unacked > 0
-  const isActive = count > 0 || isProcessing
-  const labelId = `${title.toLowerCase().replace(/\s+/g, "-")}-label`
+  const isActive = isProcessing
+  const hasMessages = count > 0
 
-  const inactiveBorder = isDarkMode ? "#1e293b" : "#e2e8f0"
-  const finalActiveBg = isDarkMode ? `${activeColor}20` : activeBg
-  const finalInactiveBg = isDarkMode ? "#1e293b" : "#f1f5f9"
+  const activeClass = isActive ? "is-active" : ""
+  const messageClass = hasMessages ? "has-messages" : ""
+
+  const showTimer = hasMessages && queue?.ttl && queue?.headTimestamp
 
   return (
-    <motion.article
-      layout
-      aria-labelledby={labelId}
-      animate={{
-        borderColor: isActive ? activeColor : inactiveBorder,
-        boxShadow: isActive ? `0 0 12px ${activeColor}40` : "none",
-      }}
-      transition={{ duration: 0.3 }}
-      className="bg-white dark:bg-slate-900 rounded-xl p-3 border-2 flex flex-col gap-1 min-w-0 transition-colors"
-    >
-      <div className="flex items-center justify-between gap-1">
+    <article className={`block-3d ${blockClass} ${activeClass} ${messageClass} p-2 flex flex-col min-w-0 h-[96px]`}>
+      {/* Top: title + icon */}
+      <div className="flex items-center justify-between gap-1.5">
         <div className="min-w-0">
-          <span
-            id={labelId}
-            className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block"
-          >
-            {title}
-          </span>
-          <span className="text-[10px] font-mono text-slate-500 dark:text-slate-450 block truncate">
+          <span className="tech-label text-[8px] block text-[var(--base-color)]">{title}</span>
+          <span className="font-tech text-[9px] block truncate font-bold opacity-80" title={queue?.name}>
             {queue?.name ?? title}
           </span>
         </div>
+        <div className="p-0.5 rounded bg-[var(--top-color)] text-[var(--bottom-color)] flex-shrink-0">{icon}</div>
+      </div>
 
-        <div
-          className="p-1.5 rounded-lg flex-shrink-0 transition-all"
-          style={{
-            backgroundColor: isActive ? finalActiveBg : finalInactiveBg,
-            color: isActive ? activeColor : isDarkMode ? "#64748b" : "#94a3b8",
-          }}
-        >
-          {icon}
+      {/* Middle: count + processing */}
+      <div className="flex items-end justify-between mt-auto">
+        <div className="flex flex-col">
+          <span className="tech-label text-[7px] opacity-60">msgs</span>
+          <span
+            className="font-tech text-base font-bold leading-none tracking-tighter"
+            style={{ color: "var(--base-color)" }}
+          >
+            {count}
+          </span>
         </div>
+
+        {isProcessing && (
+          <div className="flex items-center gap-1 tech-label text-[7px] px-0.5 py-0.5 rounded bg-[var(--glow-color)] text-[var(--bottom-color)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--bottom-color)] animate-ping" />
+            {unacked} proc
+          </div>
+        )}
       </div>
 
-      <div className="flex items-baseline justify-between mt-1">
-        <span className="text-[10px] text-slate-400 dark:text-slate-500">Mensagens</span>
-        <motion.span
-          key={count}
-          initial={{ scale: 1.3 }}
-          animate={{ scale: 1 }}
-          className="text-xl font-mono font-bold"
-          style={{ color: isActive ? activeColor : isDarkMode ? "#334155" : "#cbd5e1" }}
-        >
-          {count}
-        </motion.span>
-      </div>
-
-      {isActive && queue?.ttl && queue?.headTimestamp && (
+      {/* Bottom: full-width timer (always reserves space via h-[110px]) */}
+      {showTimer && queue && queue.headTimestamp !== null && queue.ttl !== null ? (
         <TimerBar headTimestamp={queue.headTimestamp} ttlMs={queue.ttl} clockOffset={clockOffset} />
+      ) : (
+        <div className="h-[14px]" />
       )}
-    </motion.article>
+    </article>
   )
 }
