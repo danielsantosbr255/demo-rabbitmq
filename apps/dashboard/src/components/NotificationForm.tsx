@@ -1,4 +1,5 @@
-import { type FormEvent, useState } from "react"
+import { Dices, Mail, MessageSquare, Send } from "lucide-react"
+import { type FormEvent, useCallback, useState } from "react"
 import type { NotificationChannel, NotificationFormData } from "../types/dashboard"
 
 interface NotificationFormProps {
@@ -6,23 +7,73 @@ interface NotificationFormProps {
   isSending: boolean
 }
 
-const initialState = {
+const EMAIL_TEMPLATES = [
+  {
+    to: "maria.silva@corp.com.br",
+    subject: "Deploy falhou no ambiente staging",
+    body: "O pipeline de deploy detectou falha no build #4821. Container api-gateway não iniciou corretamente. Verifique os logs do Kubernetes.",
+  },
+  {
+    to: "dev-team@startup.io",
+    subject: "Novo usuário cadastrado",
+    body: "Um novo usuário completou o onboarding: João Pedro. Plano: Enterprise. Revenue: R$ 2.400/mês.",
+  },
+  {
+    to: "alerts@monitor.sys",
+    subject: "CPU acima de 90% — Alerta crítico",
+    body: "Servidor prod-worker-03 está com uso de CPU em 94% há mais de 5 minutos. Ação recomendada: escalar horizontalmente.",
+  },
+  {
+    to: "ana.costa@fintech.com",
+    subject: "Relatório semanal de transações",
+    body: "Resumo da semana: 14.832 transações processadas, volume total R$ 2.3M, taxa de aprovação 97.2%.",
+  },
+  {
+    to: "security@empresa.com.br",
+    subject: "Tentativa de acesso suspeita",
+    body: "IP 192.168.45.201 tentou 15 logins falhos na conta admin@painel. Conta bloqueada temporariamente.",
+  },
+]
+
+const SMS_TEMPLATES = [
+  { to: "+5511987654321", body: "Seu código de verificação é: 847293. Válido por 5 minutos." },
+  {
+    to: "+5521912345678",
+    body: "ALERTA: Compra de R$ 1.249,90 detectada no cartão final 4832. Ligue 0800-123-4567.",
+  },
+  { to: "+5531998765432", body: "Olá Ana! Seu pedido #7821 saiu para entrega. Rastreie: https://rastr.io/7821" },
+  { to: "+5548911223344", body: "Promoção relâmpago! 40% OFF em planos Pro até meia-noite com o cupom FLASH40." },
+  { to: "+5519998877665", body: "Seu saldo: R$ 3.482,17. Última transação: PIX R$ 150,00 para João Silva." },
+]
+
+const initialState: NotificationFormData = {
   channel: "email" as NotificationChannel,
-  to: "john@mail.com",
-  subject: "Teste de simulação",
-  body: "Verificando topologia avançada de resiliência do monorepo!",
+  to: "maria.silva@corp.com.br",
+  subject: "Deploy falhou no ambiente staging",
+  body: "O pipeline de deploy detectou falha no build #4821. Container api-gateway não iniciou corretamente.",
 }
 
 export function NotificationForm({ onSend, isSending }: NotificationFormProps) {
   const [formValues, setFormValues] = useState<NotificationFormData>(initialState)
 
+  const randomize = useCallback(() => {
+    if (formValues.channel === "email") {
+      const template = EMAIL_TEMPLATES[Math.floor(Math.random() * EMAIL_TEMPLATES.length)]
+      setFormValues({ channel: "email", ...template })
+    } else {
+      const template = SMS_TEMPLATES[Math.floor(Math.random() * SMS_TEMPLATES.length)]
+      setFormValues({ channel: "sms", to: template.to, subject: "", body: template.body })
+    }
+  }, [formValues.channel])
+
   const handleChannelChange = (channel: NotificationChannel) => {
-    setFormValues((current) => ({
-      channel,
-      to: channel === "email" ? "john@mail.com" : "+5511987654321",
-      subject: channel === "email" ? "Teste de simulação" : "",
-      body: current.body,
-    }))
+    if (channel === "email") {
+      const template = EMAIL_TEMPLATES[Math.floor(Math.random() * EMAIL_TEMPLATES.length)]
+      setFormValues({ channel: "email", ...template })
+    } else {
+      const template = SMS_TEMPLATES[Math.floor(Math.random() * SMS_TEMPLATES.length)]
+      setFormValues({ channel: "sms", to: template.to, subject: "", body: template.body })
+    }
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -31,46 +82,50 @@ export function NotificationForm({ onSend, isSending }: NotificationFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <fieldset className="space-y-2">
-        <legend className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-          Canal
-        </legend>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+      {/* Channel selector — Clean Neumorphic without borders */}
+      <fieldset className="space-y-1">
+        <legend className="tech-label">Canal</legend>
         <div
-          className="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl transition-colors"
-          role="radiogroup"
-          aria-label="Escolha do canal de notificação"
+          className="flex p-0.5 rounded-md shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_1.5px_5px_rgba(0,0,0,0.3)]"
+          style={{ backgroundColor: "var(--bg-inset)" }}
         >
-          {(["email", "sms"] as NotificationChannel[]).map((channel) => (
-            <button
-              key={channel}
-              type="button"
-              aria-pressed={formValues.channel === channel}
-              onClick={() => handleChannelChange(channel)}
-              className={`py-2 text-xs font-semibold rounded-lg capitalize transition-all ${
-                formValues.channel === channel
-                  ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200 dark:border-slate-750"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-              }`}
-            >
-              {channel === "email" ? "✉ E-mail" : "💬 SMS"}
-            </button>
-          ))}
+          {(["email", "sms"] as NotificationChannel[]).map((channel) => {
+            const isSelected = formValues.channel === channel
+            const Icon = channel === "email" ? Mail : MessageSquare
+            return (
+              <button
+                key={channel}
+                type="button"
+                onClick={() => handleChannelChange(channel)}
+                className={`flex-1 py-1 font-tech text-[10.5px] font-bold uppercase rounded flex items-center justify-center gap-1.5 transition-all duration-200 ${
+                  isSelected
+                    ? "bg-page text-blue-base shadow-sm"
+                    : "text-text-muted hover:text-text-primary opacity-70 hover:opacity-100"
+                }`}
+              >
+                <Icon className="w-3 h-3" />
+                {channel === "email" ? "E-mail" : "SMS"}
+              </button>
+            )
+          })}
         </div>
       </fieldset>
 
+      <button type="button" onClick={randomize} className="tech-btn">
+        <Dices className="w-3 h-3" />
+        Aleatório
+      </button>
+
       <div>
-        <label
-          htmlFor="to"
-          className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5"
-        >
-          {formValues.channel === "email" ? "E-mail do Destinatário" : "Número de Telefone"}
+        <label htmlFor="to" className="tech-label block mb-0.5">
+          {formValues.channel === "email" ? "Destinatário" : "Telefone"}
         </label>
         <input
           id="to"
           type="text"
           required
-          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-indigo-300 dark:focus:ring-indigo-900/50 focus:border-indigo-400 dark:focus:border-indigo-700 outline-none transition-all font-mono dark:text-slate-100"
+          className="tech-input w-full"
           value={formValues.to}
           onChange={(event) => setFormValues({ ...formValues, to: event.target.value })}
         />
@@ -78,17 +133,14 @@ export function NotificationForm({ onSend, isSending }: NotificationFormProps) {
 
       {formValues.channel === "email" && (
         <div>
-          <label
-            htmlFor="subject"
-            className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5"
-          >
+          <label htmlFor="subject" className="tech-label block mb-0.5">
             Assunto
           </label>
           <input
             id="subject"
             type="text"
             required
-            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-indigo-300 dark:focus:ring-indigo-900/50 focus:border-indigo-400 dark:focus:border-indigo-700 outline-none transition-all dark:text-slate-100"
+            className="tech-input w-full"
             value={formValues.subject}
             onChange={(event) => setFormValues({ ...formValues, subject: event.target.value })}
           />
@@ -96,28 +148,22 @@ export function NotificationForm({ onSend, isSending }: NotificationFormProps) {
       )}
 
       <div>
-        <label
-          htmlFor="body"
-          className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5"
-        >
-          Corpo da Mensagem
+        <label htmlFor="body" className="tech-label block mb-0.5">
+          Mensagem
         </label>
         <textarea
           id="body"
           required
-          rows={4}
-          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-indigo-300 dark:focus:ring-indigo-900/50 focus:border-indigo-400 dark:focus:border-indigo-700 outline-none resize-none transition-all font-mono dark:text-slate-100"
+          rows={3}
+          className="tech-input w-full resize-none leading-relaxed"
           value={formValues.body}
           onChange={(event) => setFormValues({ ...formValues, body: event.target.value })}
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={isSending}
-        className="w-full bg-indigo-500 hover:bg-indigo-600 disabled:bg-indigo-300 dark:disabled:bg-indigo-950/50 active:scale-[0.98] text-white text-sm font-semibold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
-      >
-        <span className="text-white">{isSending ? "Enviando..." : "Enviar Notificação"}</span>
+      <button type="submit" disabled={isSending} className="tech-btn tech-btn-primary w-full py-2 mt-1.5">
+        <Send className="w-3.5 h-3.5" />
+        {isSending ? "Enviando..." : "Enviar Mensagem"}
       </button>
     </form>
   )

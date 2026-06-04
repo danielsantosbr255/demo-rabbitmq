@@ -1,4 +1,4 @@
-import { Activity, Clock, HelpCircle, Mail, MessageSquare, Server } from "lucide-react"
+import { Activity, Clock, Mail, MessageSquare, Server, Shield, Terminal } from "lucide-react"
 import { useState } from "react"
 import { DlqInspector } from "./components/DlqInspector"
 import { EventLog } from "./components/EventLog"
@@ -12,7 +12,8 @@ import type { NotificationFormData } from "./types/dashboard"
 
 function App() {
   const { toggleTheme, isDarkMode } = useDarkMode()
-  const { queues, dlqMessages, logs, isPurging, clockOffset, addLog, fetchDlq, clearDlq } = useDashboardData()
+  const { queues, dlqMessages, logs, isPurging, clockOffset, addLog, fetchDlq, clearDlq, clearLogs } =
+    useDashboardData()
 
   const [isSending, setIsSending] = useState(false)
 
@@ -32,72 +33,51 @@ function App() {
   }
 
   const emailPipelineItems = [
-    {
-      title: "Principal",
-      queueName: "q.email",
-      icon: <Activity className="w-3 h-3" />,
-      activeColor: "#3b82f6",
-      activeBg: "#eff6ff",
-    },
+    { title: "Principal", queueName: "q.email", icon: <Activity className="w-3.5 h-3.5" />, blockClass: "block-blue" },
     {
       title: "Tentativa 1",
       queueName: "q.email.retry.0",
-      icon: <Clock className="w-3 h-3" />,
-      activeColor: "#f59e0b",
-      activeBg: "#fffbeb",
+      icon: <Clock className="w-3.5 h-3.5" />,
+      blockClass: "block-yellow",
     },
     {
       title: "Tentativa 2",
       queueName: "q.email.retry.1",
-      icon: <Clock className="w-3 h-3" />,
-      activeColor: "#f97316",
-      activeBg: "#fff7ed",
+      icon: <Clock className="w-3.5 h-3.5" />,
+      blockClass: "block-orange",
     },
     {
       title: "Tentativa 3",
       queueName: "q.email.retry.2",
-      icon: <Clock className="w-3 h-3" />,
-      activeColor: "#ef4444",
-      activeBg: "#fef2f2",
+      icon: <Clock className="w-3.5 h-3.5" />,
+      blockClass: "block-red",
     },
   ]
 
   const smsPipelineItems = [
-    {
-      title: "Principal",
-      queueName: "q.sms",
-      icon: <Activity className="w-3 h-3" />,
-      activeColor: "#10b981",
-      activeBg: "#f0fdf4",
-    },
+    { title: "Principal", queueName: "q.sms", icon: <Activity className="w-3.5 h-3.5" />, blockClass: "block-green" },
     {
       title: "Tentativa 1",
       queueName: "q.sms.retry.0",
-      icon: <Clock className="w-3 h-3" />,
-      activeColor: "#f59e0b",
-      activeBg: "#fffbeb",
+      icon: <Clock className="w-3.5 h-3.5" />,
+      blockClass: "block-yellow",
     },
     {
       title: "Tentativa 2",
       queueName: "q.sms.retry.1",
-      icon: <Clock className="w-3 h-3" />,
-      activeColor: "#f97316",
-      activeBg: "#fff7ed",
+      icon: <Clock className="w-3.5 h-3.5" />,
+      blockClass: "block-orange",
     },
     {
       title: "Tentativa 3",
       queueName: "q.sms.retry.2",
-      icon: <Clock className="w-3 h-3" />,
-      activeColor: "#ef4444",
-      activeBg: "#fef2f2",
+      icon: <Clock className="w-3.5 h-3.5" />,
+      blockClass: "block-red",
     },
   ]
 
   return (
-    <main
-      className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased transition-colors"
-      style={{ fontFamily: "'Inter', sans-serif" }}
-    >
+    <main className="h-screen flex flex-col font-sans bg-frame text-primary">
       <Header
         onSync={() => {
           fetchDlq()
@@ -108,68 +88,68 @@ function App() {
         toggleTheme={toggleTheme}
       />
 
-      <div className="grid min-h-[calc(100vh-57px)] grid-cols-1 gap-0 xl:grid-cols-[320px_minmax(0,1fr)_320px] overflow-hidden">
-        <aside className="w-full xl:max-w-[320px] border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col overflow-y-auto transition-colors">
-          <div className="p-5 flex flex-col gap-4 flex-1">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold flex items-center gap-2 text-slate-700 dark:text-slate-200">
-                <Server className="w-4 h-4 text-indigo-400" /> Despachante API Gateway
-              </h2>
-              <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md transition-colors">
-                :3000
-              </span>
+      {/* 3-column layout */}
+      <div className="flex-1 flex min-h-0 overflow-hidden">
+        {/* ─── LEFT SIDEBAR ─── */}
+        <aside className="w-[250px] xl:w-[270px] shrink-0 overflow-y-auto flex flex-col bg-frame layout-separator-right">
+          <div className="p-3.5 flex flex-col gap-3 flex-1">
+            <div className="section-label" style={{ "--accent-color": "var(--blue-base)" } as React.CSSProperties}>
+              <Server className="label-icon" />
+              API Gateway
+              <span className="label-tag">:3000</span>
             </div>
-
             <NotificationForm onSend={handleSend} isSending={isSending} />
           </div>
         </aside>
 
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="shrink-0 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 transition-colors">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold flex items-center gap-2 text-slate-700 dark:text-slate-200">
-                <Activity className="w-4 h-4 text-emerald-500" /> Pipeline de Resiliência Ativo
-              </h2>
-              <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md transition-colors">
-                RABBITMQ
-              </span>
+        {/* ─── CENTER PAGE ─── */}
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-page">
+          {/* Pipeline */}
+          <div className="shrink-0 p-3.5 pb-2.5 overflow-x-auto bg-page layout-separator-bottom">
+            <div className="flex items-center justify-between mb-3">
+              <div className="section-label" style={{ "--accent-color": "var(--green-base)" } as React.CSSProperties}>
+                <Shield className="label-icon" />
+                Roteamento
+                <span className="label-tag">RabbitMQ</span>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               <PipelineSection
-                label="Topologia E-mail"
-                icon={<Mail className="w-3.5 h-3.5 text-sky-500" />}
+                label="Fluxo de E-mail"
+                labelIcon={<Mail className="w-3.5 h-3.5 text-blue-base" />}
                 items={emailPipelineItems}
                 queues={queues}
                 clockOffset={clockOffset}
-                isDarkMode={isDarkMode}
               />
               <PipelineSection
-                label="Topologia SMS"
-                icon={<MessageSquare className="w-3.5 h-3.5 text-emerald-500" />}
+                label="Fluxo de SMS"
+                labelIcon={<MessageSquare className="w-3.5 h-3.5 text-green-base" />}
                 items={smsPipelineItems}
                 queues={queues}
                 clockOffset={clockOffset}
-                isDarkMode={isDarkMode}
               />
             </div>
-
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-3 flex items-center gap-1">
-              <HelpCircle className="w-3.5 h-3.5" /> 3 tentativas com atraso exponencial antes da fila morta (DLQ).
-            </p>
           </div>
 
+          {/* DLQ */}
           <DlqInspector dlqMessages={dlqMessages} isPurging={isPurging} onRefresh={fetchDlq} onClear={clearDlq} />
         </div>
 
-        <aside className="w-full xl:max-w-[320px] border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col transition-colors">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800 transition-colors">
-            <h2 className="text-sm font-semibold flex items-center gap-2 text-slate-700 dark:text-slate-200">
-              <Activity className="w-4 h-4 text-slate-400" /> Stream de Eventos
-            </h2>
-            <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md transition-colors">
-              SSE STREAM
-            </span>
+        {/* ─── RIGHT SIDEBAR ─── */}
+        <aside className="w-[250px] xl:w-[270px] shrink-0 flex flex-col min-h-0 overflow-hidden bg-frame layout-separator-left">
+          <div className="shrink-0 px-3.5 py-2.5 flex items-center justify-between gap-2">
+            <div
+              className="section-label text-[10px]"
+              style={{ "--accent-color": "var(--orange-base)" } as React.CSSProperties}
+            >
+              <Terminal className="label-icon" />
+              Eventos
+              <span className="label-tag">SSE</span>
+            </div>
+            <button type="button" onClick={clearLogs} className="tech-btn text-[8px] py-0.5 px-1.5">
+              Limpar
+            </button>
           </div>
 
           <EventLog logs={logs} />

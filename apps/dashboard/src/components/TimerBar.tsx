@@ -27,24 +27,23 @@ export function TimerBar({ headTimestamp, ttlMs, clockOffset }: TimerBarProps) {
   }, [headTimestamp, ttlMs, clockOffset])
 
   return (
-    <div className="w-full mt-2">
+    <div className="w-full mt-1">
       <div
-        className="flex justify-between text-[9px] font-semibold text-amber-600 dark:text-amber-500 mb-1"
-        role="status"
-        aria-live="polite"
-        aria-label="Tempo restante para próxima tentativa"
+        className="w-full rounded-full h-1 overflow-hidden border border-light"
+        style={{ backgroundColor: "var(--bg-inset)" }}
       >
-        <span className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 animate-spin inline-block rounded-full border-t-2 border-amber-600 dark:border-amber-500" />
-          Aguardando próxima tentativa
-        </span>
-        <span>{secondsLeft}s</span>
-      </div>
-      <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1 overflow-hidden">
         <div
-          className="bg-gradient-to-r from-amber-400 to-orange-400 h-full transition-all duration-200 ease-linear"
-          style={{ width: `${progress}%` }}
+          className="h-full transition-all duration-200 ease-linear rounded-full"
+          style={{
+            width: `${progress}%`,
+            background: "var(--base-color)",
+          }}
         />
+      </div>
+      <div className="flex justify-end mt-0.5" role="status" aria-live="polite" aria-label="Tempo restante">
+        <span className="tech-label text-[7px]" style={{ color: "var(--base-color)" }}>
+          {secondsLeft}s
+        </span>
       </div>
     </div>
   )
