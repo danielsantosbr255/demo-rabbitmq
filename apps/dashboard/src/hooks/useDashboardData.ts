@@ -94,6 +94,10 @@ export function useDashboardData() {
     }
   }, [addLog, fetchDlq])
 
+  const clearLogs = useCallback(() => {
+    setLogs([])
+  }, [])
+
   return {
     queues,
     dlqMessages,
@@ -103,5 +107,6 @@ export function useDashboardData() {
     addLog,
     fetchDlq,
     clearDlq,
+    clearLogs,
   }
 }
